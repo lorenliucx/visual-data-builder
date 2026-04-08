@@ -1,0 +1,914 @@
+<!DOCTYPE html><html class="light" lang="en"><head></head><body class="bg-surface font-body text-on-surface antialiased overflow-hidden h-screen flex flex-col">
+
+
+
+
+<style>
+    .extract-column-item:hover > .extract-submenu {
+      display: block !important;
+    }
+    .extract-submenu {
+      display: none;
+      position: absolute;
+      left: 100%;
+      top: 0;
+      min-width: 240px;
+      margin-left: 4px;
+      z-index: 100;
+    }
+  </style>
+<style>
+    .source-table-dropdown {
+      display: none;
+      z-index: 100;
+    }
+    .group:hover > .source-table-dropdown {
+      display: block;
+    }
+    .category-item:hover > .table-list {
+      display: block;
+    }
+    .table-list {
+      display: none;
+      position: absolute;
+      left: 100%;
+      top: 0;
+      min-width: 200px;
+      margin-left: 2px;
+    }
+  </style>
+<style>
+    .group:hover .header-dropdown {
+      display: block !important;
+    }
+  </style>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>SQL Architect Pro - Create New Task</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet">
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary-fixed": "#001f2a",
+            "inverse-surface": "#2d3133",
+            "surface-container-highest": "#e0e3e5",
+            "error-container": "#ffdad6",
+            "surface-container-high": "#e5e9eb",
+            "on-secondary": "#ffffff",
+            "tertiary-fixed-dim": "#ffb694",
+            "primary-fixed": "#d7e2ff",
+            "tertiary-container": "#833301",
+            "secondary-fixed-dim": "#adcbda",
+            "secondary": "#466270",
+            "surface-variant": "#e0e3e5",
+            "on-tertiary-container": "#ffa77e",
+            "primary": "#00346f",
+            "on-tertiary-fixed-variant": "#7b2f00",
+            "inverse-on-surface": "#eef1f3",
+            "surface": "#f7fafc",
+            "surface-tint": "#255dad",
+            "on-primary-fixed-variant": "#00458f",
+            "surface-bright": "#f7fafc",
+            "on-surface-variant": "#424751",
+            "secondary-container": "#c6e4f4",
+            "outline": "#737783",
+            "surface-container": "#ebeef0",
+            "outline-variant": "#c2c6d3",
+            "on-primary": "#ffffff",
+            "on-secondary-container": "#4a6774",
+            "error": "#ba1a1a",
+            "on-background": "#181c1e",
+            "primary-container": "#004a99",
+            "on-error-container": "#93000a",
+            "tertiary-fixed": "#ffdbcc",
+            "surface-container-low": "#f1f4f6",
+            "tertiary": "#5f2200",
+            "inverse-primary": "#abc7ff",
+            "on-tertiary-fixed": "#351000",
+            "secondary-fixed": "#c9e7f7",
+            "on-secondary-fixed-variant": "#2e4b57"
+          },
+          fontFamily: {
+            "headline": ["Manrope"],
+            "body": ["Inter"],
+            "label": ["Inter"],
+            "mono": ["JetBrains Mono"]
+          },
+          borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+        },
+      },
+    }
+  </script>
+<style class="header-dropdown-fix">
+    .table-container {
+      display: block;
+      max-height: 800px;
+      overflow: visible !important;
+    }
+    .table-container::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .table-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+      background-color: #e2e8f0;
+      border-radius: 20px;
+    }
+    .table-container:hover::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+    }
+
+    .sticky-thead th {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background-color: #f1f4f6;
+    }
+    .sticky-thead .header-dropdown {
+      top: 100%;
+      z-index: 50;
+    }
+
+    /* Hover Sidebar Styles */
+    .sidebar-rail {
+      width: 64px;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 60;
+    }
+    .sidebar-rail:hover {
+      width: 32rem;
+    }
+    .sidebar-content {
+      width: 32rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    .sidebar-rail:hover .sidebar-content {
+      opacity: 1;
+      visibility: visible;
+    }
+    .sidebar-rail:hover .sidebar-icons {
+      display: none;
+    }
+    .sidebar-icons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      padding-top: 1.5rem;
+      width: 100%;
+    }
+  </style>
+<style>
+    .notification-dot {
+      width: 6px;
+      height: 6px;
+      background-color: #ef4444;
+      border-radius: 9999px;
+      position: absolute;
+      top: -2px;
+      right: -4px;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+    }
+    .menu-tooltip {
+      visibility: hidden;
+      position: absolute;
+      left: 105%;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: #1e293b;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      white-space: nowrap;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .group:hover .menu-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+<style>
+    .funnel-tab-actions {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .funnel-tab-actions .material-symbols-outlined {
+      opacity: 0.3;
+      transition: opacity 0.2s ease;
+      cursor: pointer;
+    }
+    .funnel-tab-actions .material-symbols-outlined:hover {
+      opacity: 1;
+    }
+  </style>
+<style>
+    .visibility-tooltip-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .visibility-tooltip {
+      visibility: hidden;
+      position: absolute;
+      left: 140%;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: #1e293b;
+      color: #ffffff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      width: 200px;
+      white-space: normal;
+      line-height: 1.4;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.2s, visibility 0.2s;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+      pointer-events: none;
+    }
+    .visibility-tooltip::before {
+      content: '';
+      position: absolute;
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: transparent #1e293b transparent transparent;
+    }
+    .visibility-tooltip-container:hover .visibility-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+<style>
+    .filter-tooltip-container {
+      position: relative;
+    }
+    .filter-tooltip {
+      visibility: hidden;
+      position: absolute;
+      bottom: 120%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #1e293b;
+      color: #ffffff;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 11px;
+      width: 260px;
+      white-space: normal;
+      line-height: 1.5;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+    }
+    .filter-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: #1e293b transparent transparent transparent;
+    }
+    .filter-tooltip-container:hover .filter-tooltip {
+      visibility: visible;
+      opacity: 1;
+      transform: translateX(-50%) translateY(-5px);
+    }
+  </style>
+<style>
+    .dropdown-tooltip-container {
+      position: relative;
+    }
+    .dropdown-tooltip {
+      visibility: hidden;
+      position: absolute;
+      left: 105%;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: #1e293b;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      white-space: nowrap;
+      z-index: 60;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .dropdown-tooltip::before {
+      content: '';
+      position: absolute;
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 4px;
+      border-style: solid;
+      border-color: transparent #1e293b transparent transparent;
+    }
+    .dropdown-tooltip-container:hover .dropdown-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+<style>
+    .venn-diagram-container:hover .venn-circle {
+      stroke-width: 2px;
+    }
+    .venn-circle {
+      transition: all 0.2s ease;
+    }
+    .merge-option {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .merge-option:hover {
+      background-color: rgba(0, 74, 153, 0.05);
+      border-color: #004a99;
+    }
+    .merge-option.active {
+      background-color: rgba(0, 74, 153, 0.08);
+      border-color: #004a99;
+      box-shadow: 0 0 0 1px #004a99;
+    }
+  </style>
+<!-- TopNavBar (Shared Component) -->
+<header class="bg-slate-50 dark:bg-slate-900 flex justify-between items-center px-6 py-3 w-full border-b border-slate-200/50 dark:border-slate-800/50 sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-headline" style="">Visual Data Builder<br></span>
+<nav class="hidden md:flex gap-6">
+<a class="text-blue-700 dark:text-blue-400 border-b-2 border-blue-700 dark:border-blue-400 font-semibold py-1 transition-colors" href="#" style="">Dashboard</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 py-1 transition-colors" href="#" style="">Data Sources</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 py-1 transition-colors" href="#" style="">Documentation</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-full transition-colors active:scale-95" style="">
+<span class="material-symbols-outlined" style="">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-full transition-colors active:scale-95" style="">
+<span class="material-symbols-outlined" style="">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
+<img alt="User profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMFqKNK-Ii75xNOEXEnfrw87zo9ElmGQ4K0tcC0rdU2K_ecuaJNkmLLD-0j85vpEwsSzuP6sGLD57oHuueD2jwKqaDUM9BVPpqOUFyuxH8r4ngavh-j5zLnIaqBbWjOYSnhkHaq9bHmf0CN0zCaPjuBCLLCyQwcMN_tiY2iMcwKTwGrJiEw1FuvUXBXwuvcAa-LGnEs4D8lTZTqKk7zzIQK9eKUdCPZVmlawRh5BLkjb97C8vsiOLUZVq6M1VGGJXQPTzE1LHErJqf" class="" style="">
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden relative">
+<!-- SideNavBar (Minimal Rail Variation) -->
+<aside class="sidebar-rail bg-slate-100 dark:bg-slate-950 flex flex-col h-full border-r border-slate-200/50 dark:border-slate-800/50 absolute left-0 top-0 bottom-0 shadow-2xl">
+<!-- Collapsed Icons View -->
+<div class="sidebar-icons">
+<span class="material-symbols-outlined text-slate-400 mb-6" style="">edit_note</span>
+<div class="flex flex-col items-center w-full">
+<div class="w-8 h-8 flex items-center justify-center rounded-lg text-[10px] font-bold text-slate-500 cursor-pointer hover:border-slate-400 hover:bg-slate-200 transition-all" style="">N1</div>
+<div class="flex justify-center w-full py-1">
+<span class="material-symbols-outlined text-slate-300 scale-75 rotate-180" style="font-size: 14px;">expand_less</span>
+</div>
+<div class="w-8 h-8 flex items-center justify-center text-[10px] font-bold text-primary cursor-pointer bg-primary/10 border-l-2 border-primary rounded-r-sm relative" style="">S1</div>
+<div class="flex justify-center w-full py-1">
+<span class="material-symbols-outlined text-slate-300 scale-75 rotate-180" style="font-size: 14px;">expand_less</span>
+</div>
+<div class="w-8 h-8 flex items-center justify-center rounded-lg text-[10px] font-bold text-slate-500 cursor-pointer hover:border-slate-400 hover:bg-slate-200 transition-all" style="">M1</div>
+<div class="flex justify-center w-full py-1">
+<span class="material-symbols-outlined text-slate-300 scale-75 rotate-180" style="font-size: 14px;">expand_less</span>
+</div>
+<div class="w-8 h-8 flex items-center justify-center rounded-lg text-primary cursor-pointer hover:bg-primary/10 transition-all group relative">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: &quot;FILL&quot; 1; font-weight: 700;">add</span>
+<div class="menu-tooltip" style="">New Table</div>
+</div>
+</div>
+<div class="w-8 h-px bg-slate-200 dark:bg-slate-800 mb-6"></div>
+<div class="mt-auto flex flex-col gap-4 items-center mb-8">
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-primary transition-colors" style="">save</span>
+</div>
+</div>
+<!-- Expanded Content View -->
+<div class="sidebar-content flex flex-col h-full p-6 bg-slate-100 dark:bg-slate-950">
+<div class="mb-8 space-y-4 px-2">
+<h1 class="text-lg font-bold text-on-surface font-headline" style="">Create New Template</h1>
+<div class="flex flex-col gap-2">
+<label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 font-label" style="">Template Name</label>
+<input class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-slate-400 text-on-surface" placeholder="Enter template name..." type="text">
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-2" style="">Workflow Funnel</h4>
+<!-- Input Source Tab -->
+<div class="funnel-connector flex flex-col gap-1 mb-4">
+<div class="px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded shadow-sm flex items-center gap-3 cursor-pointer hover:border-primary/30 transition-colors">
+<span class="material-symbols-outlined text-slate-400" style="">database</span>
+<div class="flex flex-col overflow-hidden">
+<span class="text-xs font-bold text-slate-700 dark:text-slate-200 truncate font-headline" style="">raw_transactions_v1</span>
+<span class="text-[10px] text-slate-400 font-medium" style="">Normal Table</span>
+</div>
+<div class="funnel-tab-actions">
+<div class="visibility-tooltip-container">
+<span class="material-symbols-outlined text-slate-400 scale-75" style="">visibility_off</span>
+<div class="visibility-tooltip" style="">隐藏后将不会在Template运行时生效，也不可以被任何Table引用。</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 scale-75" style="">delete</span>
+</div>
+</div>
+<div class="flex justify-center -mb-2">
+<span class="material-symbols-outlined text-slate-300 scale-75" style="">expand_more</span>
+</div>
+</div>
+<!-- Active Edit State Tab -->
+<div class="funnel-connector flex flex-col gap-1 mb-4">
+<div class="px-4 py-3 bg-white dark:bg-slate-900 border-2 border-primary rounded shadow-[0_4px_12px_rgba(0,52,111,0.08)] flex items-center gap-3 relative z-10">
+<div class="absolute -left-0.5 top-0 bottom-0 w-1 bg-primary rounded-l"></div>
+<span class="material-symbols-outlined text-primary" style="">bar_chart</span>
+<div class="flex flex-col overflow-hidden">
+<span class="text-xs font-bold text-primary truncate font-headline" style="">v_user_billing_balance_transactions_summarized_q4</span>
+<span class="text-[10px] text-primary/60 font-medium" style="">Statistics Table</span>
+</div>
+<div class="funnel-tab-actions">
+<div class="visibility-tooltip-container">
+<span class="material-symbols-outlined text-primary scale-75" style="">visibility_off</span>
+<div class="visibility-tooltip" style="">隐藏后将不会在Template运行时生效，也不可以被任何Table引用。</div>
+</div>
+<span class="material-symbols-outlined text-primary scale-75" style="">delete</span>
+</div>
+</div>
+<div class="flex justify-center -mb-2">
+<span class="material-symbols-outlined text-slate-300 scale-75" style="">expand_more</span>
+</div>
+</div>
+<!-- Merge Table Tab -->
+<div class="funnel-connector flex flex-col gap-1 mb-4">
+<div class="px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded shadow-sm flex items-center gap-3 cursor-pointer hover:border-primary/30 transition-colors">
+<span class="material-symbols-outlined text-slate-400" style="">join_inner</span>
+<div class="flex flex-col overflow-hidden">
+<span class="text-xs font-bold text-slate-700 dark:text-slate-200 truncate font-headline" style="">v_billing_q4</span>
+<span class="text-[10px] text-slate-400 font-medium" style="">Merge Table</span>
+</div>
+<div class="funnel-tab-actions">
+<div class="visibility-tooltip-container">
+<span class="material-symbols-outlined text-primary scale-75 !opacity-100" style="font-variation-settings: &quot;FILL&quot; 1; color: rgb(30, 41, 59);">visibility_off</span>
+<div class="visibility-tooltip" style="">隐藏后将不会在Template运行时生效，也不可以被任何Table引用。</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 scale-75" style="">delete</span>
+</div>
+</div>
+<div class="flex justify-center -mb-2">
+<span class="material-symbols-outlined text-slate-300 scale-75" style="">expand_more</span>
+</div>
+</div>
+<!-- Add New Tab -->
+<div class="flex items-center justify-center p-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg hover:bg-white dark:hover:bg-slate-900 cursor-pointer transition-all group">
+<div class="flex items-center gap-2 text-slate-400 group-hover:text-primary">
+<span class="material-symbols-outlined text-sm" style="">add_circle</span>
+<span class="text-xs font-semibold" style="">New Table</span>
+</div>
+</div>
+</div>
+<div class="mt-auto pt-8">
+<div class="bg-primary/5 dark:bg-primary/10 rounded-lg p-4 border border-primary/10">
+<p class="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400" style="">
+              Drag and drop elements to reorder the funnel hierarchy or add new transformation steps.
+            </p>
+</div>
+</div>
+<div class="mt-4 border-t border-slate-200/50 dark:border-slate-800/50 pt-4 mt-6">
+<button class="w-full flex items-center justify-center gap-2 bg-[#004a99] hover:bg-[#003d7e] text-white py-2.5 px-4 rounded transition-all shadow-sm active:scale-[0.98] group" style="">
+<span class="material-symbols-outlined text-sm" style="">save</span>
+<span class="text-xs font-bold uppercase tracking-wider" style="">Save Changes</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col bg-surface ml-[64px] overflow-y-auto">
+<div class="flex-1 overflow-y-auto p-8 flex flex-col gap-6">
+<!-- Section: View Name & Source Table Stacked -->
+<div class="flex flex-col gap-6 flex-shrink-0">
+<!-- View Name Row -->
+<div class="flex flex-col gap-1.5 w-full max-w-xl">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant font-label" style="">View Name</label>
+<div class="flex items-center gap-3 bg-surface-container-lowest rounded shadow-sm border border-outline-variant/10 px-4 py-2.5 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+<span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: &quot;FILL&quot; 1;">view_cozy</span>
+<input class="bg-transparent border-none p-0 focus:ring-0 w-full text-base font-headline font-semibold text-on-surface" placeholder="v_user_billing_balance_transactions_summarized_q4" spellcheck="false" type="text" value="v_user_billing_summarized_q4">
+</div>
+</div>
+<!-- Source Tables Row -->
+<div class="flex flex-row gap-6 w-full">
+<!-- Source Table 1 -->
+<div class="flex-1 flex flex-col gap-1.5 group relative">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant font-label" style="">Source Table</label>
+<div class="flex items-center justify-between gap-3 bg-surface-container-lowest rounded shadow-sm border border-outline-variant/10 px-4 py-2.5 cursor-pointer hover:border-primary/30 transition-all">
+<div class="flex items-center gap-2 overflow-hidden">
+<div class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></div>
+<span class="text-sm font-semibold text-on-surface truncate font-headline" style="">production_raw_transactions</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-lg" style="">unfold_more</span>
+</div>
+<div class="source-table-dropdown absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-xl py-1 overflow-visible">
+<div class="category-item relative px-4 py-2 hover:bg-slate-50 flex items-center justify-between cursor-pointer group/cat">
+<span class="text-xs font-bold text-slate-700" style="">Custom</span>
+<span class="material-symbols-outlined text-sm text-slate-400" style="">chevron_right</span>
+<div class="table-list bg-white border border-slate-200 rounded-lg shadow-xl py-1">
+<div class="px-4 py-2 hover:bg-slate-50 text-xs text-slate-600 cursor-pointer transition-colors" style="">N1</div>
+</div>
+</div>
+<div class="category-item relative px-4 py-2 hover:bg-slate-50 flex items-center justify-between cursor-pointer group/cat">
+<span class="text-xs font-bold text-slate-700" style="">Production</span>
+<span class="material-symbols-outlined text-sm text-slate-400" style="">chevron_right</span>
+<div class="table-list bg-white border border-slate-200 rounded-lg shadow-xl py-1">
+<div class="px-4 py-2 bg-primary/5 border-l-2 border-primary flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+<span class="text-xs font-bold text-primary" style="">production_raw_transactions</span>
+</div>
+<div class="px-4 py-2 hover:bg-slate-50 text-xs text-slate-600" style="">production.user_logs</div>
+<div class="px-4 py-2 hover:bg-slate-50 text-xs text-slate-600" style="">production.order_items</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Source Table 2 -->
+<div class="flex-1 flex flex-col gap-1.5 group relative">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant font-label" style="">Source Table 2</label>
+<div class="flex items-center justify-between gap-3 bg-surface-container-lowest rounded shadow-sm border border-outline-variant/10 px-4 py-2.5 cursor-pointer hover:border-primary/30 transition-all">
+<div class="flex items-center gap-2 overflow-hidden">
+<div class="w-2 h-2 rounded-full bg-secondary flex-shrink-0"></div>
+<span class="text-sm font-semibold text-on-surface truncate font-headline" style="">production_users</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-lg" style="">unfold_more</span>
+</div>
+<div class="source-table-dropdown absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-xl py-1 overflow-visible">
+<div class="category-item relative px-4 py-2 hover:bg-slate-50 flex items-center justify-between cursor-pointer group/cat">
+<span class="text-xs font-bold text-slate-700" style="">Custom</span>
+<span class="material-symbols-outlined text-sm text-slate-400" style="">chevron_right</span>
+<div class="table-list bg-white border border-slate-200 rounded-lg shadow-xl py-1">
+<div class="px-4 py-2 hover:bg-slate-50 text-xs text-slate-600 cursor-pointer transition-colors" style="">N1</div>
+</div>
+</div>
+<div class="category-item relative px-4 py-2 hover:bg-slate-50 flex items-center justify-between cursor-pointer group/cat">
+<span class="text-xs font-bold text-slate-700" style="">Production</span>
+<span class="material-symbols-outlined text-sm text-slate-400" style="">chevron_right</span>
+<div class="table-list bg-white border border-slate-200 rounded-lg shadow-xl py-1">
+<div class="px-4 py-2 bg-primary/5 border-l-2 border-primary flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+<span class="text-xs font-bold text-primary" style="">production.users</span>
+</div>
+<div class="px-4 py-2 hover:bg-slate-50 text-xs text-slate-600" style="">production.user_profiles</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 1: Step 1: 选择合并方式 -->
+<div class="space-y-3 flex-shrink-0">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-[10px] font-bold shadow-sm" style="">1</div>
+<div class="flex items-center gap-4">
+<h3 class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant font-label" style="">Step 1: 选择合并方式</h3>
+</div>
+</div>
+</div>
+<!-- Merge Selection Area -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/20 shadow-sm p-5">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<!-- Join (Inner) -->
+<div class="merge-option p-4 border border-outline-variant/30 rounded-lg flex flex-col items-center gap-3 cursor-pointer group/option">
+<div class="venn-diagram-container">
+<svg height="60" viewBox="0 0 100 60" width="100">
+<circle class="venn-circle fill-slate-100 stroke-slate-300" cx="35" cy="30" r="25"></circle>
+<circle class="venn-circle fill-slate-100 stroke-slate-300" cx="65" cy="30" r="25"></circle>
+<clipPath id="inner-join-clip">
+<circle cx="35" cy="30" r="25"></circle>
+</clipPath>
+<circle class="venn-circle fill-primary stroke-none" clip-path="url(#inner-join-clip)" cx="65" cy="30" r="25"></circle>
+</svg>
+</div>
+<div class="text-center">
+<span class="text-xs font-bold text-on-surface block" style="">Join (Inner)</span>
+<span class="text-[10px] text-on-surface-variant font-medium" style="">只保留满足匹配条件的行</span>
+</div>
+</div>
+<!-- Left Join -->
+<div class="merge-option active p-4 border border-outline-variant/30 rounded-lg flex flex-col items-center gap-3 cursor-pointer group/option">
+<div class="venn-diagram-container">
+<svg height="60" viewBox="0 0 100 60" width="100">
+<circle class="venn-circle fill-primary stroke-none" cx="35" cy="30" r="25"></circle>
+<circle class="venn-circle fill-slate-100 stroke-slate-300" cx="65" cy="30" r="25"></circle>
+<clipPath id="left-join-clip">
+<circle cx="65" cy="30" r="25"></circle>
+</clipPath>
+<circle class="venn-circle fill-primary stroke-none opacity-80" clip-path="url(#left-join-clip)" cx="35" cy="30" r="25"></circle>
+<circle class="venn-circle fill-none stroke-slate-300" cx="35" cy="30" r="25"></circle>
+</svg>
+</div>
+<div class="text-center">
+<span class="text-xs font-bold text-primary block" style="">Left Join</span>
+<span class="text-[10px] text-on-surface-variant font-medium" style="">保留左表的所有行 + 匹配右表</span>
+</div>
+</div>
+<!-- Right Join -->
+<div class="merge-option p-4 border border-outline-variant/30 rounded-lg flex flex-col items-center gap-3 cursor-pointer group/option">
+<div class="venn-diagram-container">
+<svg height="60" viewBox="0 0 100 60" width="100">
+<circle class="venn-circle fill-slate-100 stroke-slate-300" cx="35" cy="30" r="25"></circle>
+<circle class="venn-circle fill-primary stroke-none" cx="65" cy="30" r="25"></circle>
+<clipPath id="right-join-clip">
+<circle cx="35" cy="30" r="25"></circle>
+</clipPath>
+<circle class="venn-circle fill-primary stroke-none opacity-80" clip-path="url(#right-join-clip)" cx="65" cy="30" r="25"></circle>
+<circle class="venn-circle fill-none stroke-slate-300" cx="65" cy="30" r="25"></circle>
+</svg>
+</div>
+<div class="text-center">
+<span class="text-xs font-bold text-on-surface block" style="">Right Join</span>
+<span class="text-[10px] text-on-surface-variant font-medium" style="">保留右表的所有行 + 匹配左表</span>
+</div>
+</div>
+<!-- Union ALL -->
+<div class="merge-option p-4 border border-outline-variant/30 rounded-lg flex flex-col items-center gap-3 cursor-pointer group/option">
+<div class="venn-diagram-container">
+<svg height="60" viewBox="0 0 100 60" width="100">
+<rect class="fill-primary/20 stroke-primary/40 stroke-2" height="20" rx="2" width="60" x="20" y="10"></rect>
+<rect class="fill-primary/20 stroke-primary/40 stroke-2" height="20" rx="2" width="60" x="20" y="35"></rect>
+<path class="stroke-primary stroke-2 fill-none" d="M15 15 L10 15 L10 50 L15 50"></path>
+<text class="fill-primary font-bold text-[8px]" x="0" y="35">ALL</text>
+</svg>
+</div>
+<div class="text-center">
+<span class="text-xs font-bold text-on-surface block" style="">Union ALL</span>
+<span class="text-[10px] text-on-surface-variant font-medium" style="">合并所有行</span>
+</div>
+</div>
+</div>
+<!-- Merge Keys Area -->
+<div class="mt-4 pt-4 border-t border-outline-variant/10" id="joinConfigArea">
+<button class="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg text-xs font-bold shadow-sm hover:bg-primary/90 transition-all active:scale-95" id="joinConfigBtn">
+<span class="material-symbols-outlined text-sm" style="">join_inner</span>
+<span style="">配置匹配条件</span>
+<span class="material-symbols-outlined text-sm" style="">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Section 2: Step 2: 计算输出列 -->
+<div class="space-y-4 flex-shrink-0">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-[10px] font-bold shadow-sm" style="">2</div>
+<h3 class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant font-label" style="">Step 2: 计算输出列</h3>
+</div>
+<div class="flex gap-2">
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded text-xs font-semibold shadow-sm hover:opacity-90 transition-all" style="">
+<span class="material-symbols-outlined text-sm" style="">play_arrow</span> Run Preview
+              </button>
+</div>
+</div>
+<div class="table-container rounded-xl border border-outline-variant/20 shadow-sm bg-surface-container-lowest">
+<table class="w-full border-collapse text-sm min-w-[1200px]">
+<thead class="sticky-thead">
+<tr class="bg-surface-container-low">
+<th class="w-12 border-r border-outline-variant/10 py-3" style=""></th>
+<th class="w-10 py-3 text-center group bg-surface-container-low/50 hover:bg-surface-container-low transition-colors cursor-pointer border-r border-outline-variant/10 relative" style="">
+<div class="flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm" style="">add_circle</span>
+</div>
+<div class="header-dropdown absolute top-full left-0 mt-1 w-64 bg-white shadow-xl rounded-lg border border-outline-variant/30 py-2 z-20 font-normal hidden group-hover:block">
+<button class="w-full px-4 py-2 hover:bg-surface-container-low flex items-center gap-3 transition-colors text-left" style=""><span class="material-symbols-outlined text-sm text-on-surface-variant" style="">add</span><div class="flex flex-col"><span class="text-xs font-semibold text-on-surface-variant line-height-tight" style="">创建列</span><span class="text-[10px] font-medium text-slate-400 mt-0.5 leading-tight" style="">配置记录通过Map Data菜单查看</span></div></button>
+<div class="extract-column-item relative group/extract">
+<button class="w-full px-4 py-2 border-t border-outline-variant/10 mt-1 hover:bg-surface-container-low flex items-center justify-between transition-colors text-left" style=""><div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-sm text-on-surface-variant" style="">input</span>
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-on-surface-variant" style="">提取列</span>
+<span class="text-[10px] text-on-surface-variant/60 font-medium leading-tight" style="">请使用“创建列”添加重复列</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-xs text-slate-400" style="">chevron_right</span></button>
+<div class="extract-submenu bg-white border border-slate-200 rounded-lg shadow-xl py-1 overflow-hidden">
+<div class="px-3 py-1.5 bg-slate-50 border-b border-slate-100 mb-1">
+<span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" style="">production.raw_transactions</span>
+</div>
+<div class="px-4 py-2 hover:bg-primary/5 text-xs text-slate-600 cursor-pointer flex items-center gap-2 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm opacity-50" style="">description</span>
+<span class="" style="">production_raw_transactions.transaction_id</span>
+</div>
+<div class="px-4 py-2 hover:bg-primary/5 text-xs text-slate-600 cursor-pointer flex items-center gap-2 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm opacity-50" style="">mail</span>
+<span class="" style="">production_raw_transactions.customer_email</span>
+</div>
+<div class="px-4 py-2 hover:bg-primary/5 text-xs text-slate-600 cursor-pointer flex items-center gap-2 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm opacity-50" style="">payments</span>
+<span class="" style="">production_raw_transactions.amount_usd</span>
+</div>
+<div class="px-4 py-2 hover:bg-primary/5 text-xs text-slate-600 cursor-pointer flex items-center gap-2 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm opacity-50" style="">currency_exchange</span>
+<span class="" style="">production_raw_transactions.currency</span>
+</div>
+<div class="px-4 py-2 hover:bg-primary/5 text-xs text-slate-600 cursor-pointer flex items-center gap-2 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm opacity-50" style="">check_circle</span>
+<span class="" style="">production_raw_transactions.status</span>
+</div>
+<div class="px-4 py-2 hover:bg-primary/5 text-xs text-slate-600 cursor-pointer flex items-center gap-2 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm opacity-50" style="">calendar_today</span>
+<span class="" style="">production_raw_transactions.created_at</span>
+</div>
+</div>
+</div>
+</div>
+</th>
+<th class="px-4 py-3 text-left border-r border-outline-variant/10 group min-w-[160px] relative hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
+<div class="flex items-center justify-between group/header">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover/header:opacity-100 transition-opacity" style="">drag_indicator</span>
+<span class="font-bold font-headline" style="">transaction_id</span>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 opacity-0 group-hover/header:opacity-100 transition-opacity" style="">expand_more</span>
+<div class="absolute right-0 top-full mt-1 w-40 bg-white border border-slate-200 rounded shadow-lg opacity-0 invisible group-hover/header:opacity-100 group-hover/header:visible transition-all z-50 py-1"><button class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2" style=""><span class="material-symbols-outlined text-sm" style="">edit</span> Rename</button><button class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2" style=""><span class="material-symbols-outlined text-sm" style="">alt_route</span> Map Data</button></div>
+</div>
+</div>
+</th>
+<th class="px-4 py-3 text-left border-r border-outline-variant/10 relative min-w-[200px] group hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="relative flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity" style="">drag_indicator</span>
+<div class="relative inline-block">
+<span class="font-bold font-headline" style="">customer_email</span>
+<span class="absolute -top-1 -right-2 w-2.5 h-2.5 bg-[#ff4d4f] border-2 border-white rounded-full shadow-sm"></span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 text-on-surface opacity-0 group-hover:opacity-100 transition-opacity" style="">expand_more</span>
+</div>
+<div class="header-dropdown absolute top-full left-0 mt-1 w-48 bg-white shadow-xl rounded-lg border border-outline-variant/30 py-2 z-20 font-normal hidden group-hover:block" style="top: 90%;"><button class="w-full text-left px-4 py-2 text-sm text-on-surface-variant hover:bg-surface-container-low flex items-center gap-3 transition-colors" style=""><span class="material-symbols-outlined text-sm" style="">edit</span><span class="" style="">Rename</span></button><div class="dropdown-tooltip-container">
+<button class="w-full text-left px-4 py-2 text-sm text-on-surface-variant hover:bg-surface-container-low flex items-center gap-3 transition-colors" style="">
+<div class="relative flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" style="">alt_route</span>
+<div class="notification-dot" style="top: -4px; right: -4px;"></div>
+</div>
+<span class="" style="">Map Data</span>
+</button>
+<div class="dropdown-tooltip" style="">Mapping: u.email_addr -&gt; customer_email</div>
+</div></div>
+</th>
+<th class="px-4 py-3 text-left border-r border-outline-variant/10 group min-w-[160px] relative hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
+<div class="flex items-center justify-between group/header">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover/header:opacity-100 transition-opacity" style="">drag_indicator</span>
+<span class="font-bold font-headline" style="">
+<div class="relative inline-block">
+<span class="" style="">amount_usd</span>
+</div>
+</span>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 opacity-0 group-hover/header:opacity-100 transition-opacity" style="">expand_more</span>
+<div class="absolute right-0 top-full mt-1 w-40 bg-white border border-slate-200 rounded shadow-lg opacity-0 invisible group-hover/header:opacity-100 group-hover/header:visible transition-all z-50 py-1">
+<button class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2" style="">
+<span class="material-symbols-outlined text-sm" style="">edit</span> Rename
+                          </button>
+<button class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2" style="">
+<span class="material-symbols-outlined text-sm" style="">alt_route</span> Map Data
+                          </button>
+</div>
+</div>
+</div>
+</th>
+<th class="px-4 py-3 text-left border-r border-outline-variant/10 group min-w-[160px] relative hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
+<div class="flex items-center justify-between group/header">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover/header:opacity-100 transition-opacity" style="">drag_indicator</span>
+<span class="font-bold font-headline" style="">currency</span>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 opacity-0 group-hover/header:opacity-100 transition-opacity" style="">expand_more</span>
+<div class="absolute right-0 top-full mt-1 w-40 bg-white border border-slate-200 rounded shadow-md opacity-0 invisible group-hover/header:opacity-100 group-hover/header:visible transition-all z-50 py-2">
+<button class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2" style="">
+<span class="material-symbols-outlined text-sm" style="">edit</span> Rename
+                          </button>
+<button class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2" style="">
+<span class="material-symbols-outlined text-sm" style="">alt_route</span> Map Data
+                          </button>
+</div>
+</div>
+</div>
+</th>
+<th class="px-4 py-3 text-left border-r border-outline-variant/10 group min-w-[160px] relative hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
+<div class="flex items-center justify-between group/header">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover/header:opacity-100 transition-opacity" style="">drag_indicator</span>
+<span class="font-bold font-headline" style="">status</span>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 opacity-0 group-hover/header:opacity-100 transition-opacity" style="">expand_more</span>
+<div class="absolute right-0 top-full mt-1 w-40 bg-white border border-slate-200 rounded shadow-lg opacity-0 invisible group-hover/header:opacity-100 group-hover/header:visible transition-all z-50 py-1">
+<button class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2" style="">
+<span class="material-symbols-outlined text-sm" style="">edit</span> Rename
+                          </button>
+<button class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2" style="">
+<span class="material-symbols-outlined text-sm" style="">alt_route</span> Map Data
+                          </button>
+</div>
+</div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors group">
+<td class="text-center text-xs text-outline font-mono py-4 border-r border-outline-variant/10" style="">1</td>
+<td class="w-10 py-4 border-r border-outline-variant/10 bg-surface-container-low/20" style=""></td>
+<td class="px-4 py-4 border-r border-outline-variant/10 text-on-surface-variant font-mono" style="">TX-90210</td>
+<td class="px-4 py-4 border-r border-outline-variant/10 font-medium" style="">alex.m@example.com</td>
+<td class="px-4 py-4 border-r border-outline-variant/10 font-mono" style="">$420.00</td>
+<td class="px-4 py-4 border-r border-outline-variant/10 text-on-surface-variant" style="">USD</td>
+<td class="px-4 py-4 border-r border-outline-variant/10 text-on-surface-variant" style="">SUCCESS</td>
+</tr>
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors group">
+<td class="text-center text-xs text-outline font-mono py-4 border-r border-outline-variant/10" style="">2</td>
+<td class="w-10 py-4 border-r border-outline-variant/10 bg-surface-container-low/20" style=""></td>
+<td class="px-4 py-4 border-r border-outline-variant/10 text-on-surface-variant font-mono" style="">TX-90211</td>
+<td class="px-4 py-4 border-r border-outline-variant/10 font-medium" style="">sarah.j@tech-inc.co</td>
+<td class="px-4 py-4 border-r border-outline-variant/10 font-mono" style="">$1,150.00</td>
+<td class="px-4 py-4 border-r border-outline-variant/10 text-on-surface-variant" style="">USD</td>
+<td class="px-4 py-4 border-r border-outline-variant/10 text-on-surface-variant" style="">SUCCESS</td>
+</tr>
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors group">
+<td class="text-center text-xs text-outline font-mono py-4 border-r border-outline-variant/10" style="">3</td>
+<td class="w-10 py-4 border-r border-outline-variant/10 bg-surface-container-low/20" style=""></td>
+<td class="px-4 py-4 border-r border-outline-variant/10 font-mono" style="">...</td>
+<td class="px-4 py-4 border-r border-outline-variant/10 font-mono" style="">...</td>
+<td class="px-4 py-4 border-r border-outline-variant/10 font-mono" style="">...</td>
+<td class="px-4 py-4 border-r border-outline-variant/10 font-mono" style="">...</td>
+<td class="px-4 py-4 border-r border-outline-variant/10 font-mono" style="">...</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Section 3: SQL Preview -->
+<div class="mt-4 flex-shrink-0 pb-12">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+<span class="material-symbols-outlined text-[14px]" style="">code</span>
+</div>
+<h3 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant font-label" style="">GENERATED SQL OUTPUT</h3>
+</div>
+<button class="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded text-[10px] font-bold uppercase tracking-wider hover:bg-slate-50 transition-all shadow-sm active:scale-95 group" style="">
+<span class="material-symbols-outlined text-sm group-hover:text-primary transition-colors" style="">content_copy</span>
+<span class="" style="">Copy</span>
+</button>
+</div>
+<div class="bg-[#1e1e1e] rounded-xl border border-slate-800 shadow-lg overflow-hidden">
+<div class="flex items-center px-4 py-2 bg-[#252526] border-b border-slate-800">
+<div class="flex gap-1.5">
+<div class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
+</div>
+<span class="ml-4 text-[10px] font-mono text-slate-500 font-medium" style="">query.sql</span>
+</div>
+<div class="p-6 font-mono text-xs leading-relaxed text-[#d4d4d4] overflow-x-auto">
+<pre class="whitespace-pre"><code><span style="color:#569cd6">SELECT</span>
+    t.transaction_id,
+    t.customer_email,
+    t.amount_usd,
+    t.currency,
+    b.billing_cycle,
+    b.balance           <span style="color:#569cd6">AS</span> current_balance
+<span style="color:#569cd6">FROM</span>
+    v_user_billing_summarized_q4  t
+<span style="color:#569cd6">INNER JOIN</span>
+    v_billing_q4                  b
+    <span style="color:#569cd6">ON</span> t.customer_email = b.customer_email
+<span style="color:#569cd6">WHERE</span>
+    t.status = <span style="color:#ce9178">'SUCCESS'</span>
+    <span style="color:#569cd6">AND</span> b.balance &gt; <span style="color:#b5cea8">0</span>
+<span style="color:#569cd6">ORDER BY</span>
+    t.amount_usd <span style="color:#569cd6">DESC</span>;</code></pre></div></div></div></div></main></div></body></html>

@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Visual Data Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; background: #f7fafc; }
+
+.app-shell { display: flex; flex-direction: column; height: 100vh; }
+
+.nav-bar {
+  height: 40px;
+  min-height: 40px;
+  background: linear-gradient(135deg, #00346f 0%, #004a99 100%);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  z-index: 9999;
+  box-shadow: 0 2px 8px rgba(0,52,111,0.15);
+}
+
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.85);
+  font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.22); color: #fff; }
+.nav-btn.home-btn { background: rgba(255,255,255,0.2); color: #fff; }
+.nav-btn.home-btn:hover { background: rgba(255,255,255,0.35); }
+.nav-btn:disabled { opacity: 0.35; cursor: default; }
+.nav-btn:disabled:hover { background: rgba(255,255,255,0.12); }
+
+.nav-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.breadcrumb-item {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.breadcrumb-item.active { color: #fff; }
+.breadcrumb-sep { color: rgba(255,255,255,0.3); font-size: 11px; }
+
+.page-select {
+  appearance: none;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  padding: 3px 28px 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  color: #fff;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 6px center;
+  background-repeat: no-repeat;
+  background-size: 14px;
+  max-width: 220px;
+  transition: all 0.15s;
+}
+.page-select:hover { background-color: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); }
+.page-select:focus { outline: none; border-color: rgba(255,255,255,0.5); }
+.page-select option { background: #1e293b; color: #fff; }
+.page-select optgroup { background: #0f172a; color: #94a3b8; font-weight: 700; }
+
+.nav-counter {
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  font-family: 'JetBrains Mono', 'Inter', monospace;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.nav-icon { font-size: 16px !important; }
+
+.frame-container {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 40px);
+  overflow: hidden;
+}
+
+.page-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  background: #f7fafc;
+}
+
+.loading-overlay {
+  position: absolute; inset: 0;
+  background: #f7fafc;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10; transition: opacity 0.3s;
+}
+.loading-overlay.hidden { opacity: 0; pointer-events: none; }
+.spinner {
+  width: 28px; height: 28px;
+  border: 3px solid #e5e9eb; border-top-color: #00346f;
+  border-radius: 50%; animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.nav-hint {
+  position: fixed; bottom: 16px; right: 16px;
+  background: rgba(30,41,59,0.9); color: #fff;
+  padding: 8px 14px; border-radius: 8px;
+  font-size: 11px; line-height: 1.6;
+  backdrop-filter: blur(8px);
+  opacity: 0; transform: translateY(10px);
+  transition: all 0.3s ease; pointer-events: none;
+  z-index: 99999; max-width: 280px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.nav-hint.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.nav-hint kbd {
+  display: inline-block; background: rgba(255,255,255,0.15);
+  padding: 1px 5px; border-radius: 3px; font-size: 10px;
+  font-family: 'Inter', sans-serif; margin: 0 2px;
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- Navigation Bar -->
+  <div class="nav-bar">
+    <button class="nav-btn home-btn" onclick="goHome()" title="返回首页">
+      <span class="material-symbols-outlined nav-icon">home</span>
+    </button>
+
+    <div class="nav-breadcrumb">
+      <span class="breadcrumb-item active" id="pageTitle">首页</span>
+    </div>
+
+    <select class="page-select" id="pageSelect" onchange="navigateToPage(this.value)">
+      <optgroup label="── 首页 ──">
+        <option value="sql_editor_create_table_simplified">Home Page · 建表入口</option>
+      </optgroup>
+      <optgroup label="── SQL 工作流 ──">
+        <option value="sql_editor_step_1_status_menu_refined">创建普通Table</option>
+        <option value="sql_editor_custom_source_option_added">创建合并Table</option>
+        <option value="sql_editor_step_2_data_rows_v2">创建统计Table</option>
+      </optgroup>
+      <optgroup label="── 列操作 ──">
+        <option value="create_column_dark_mono_hover_v1">创建列</option>
+        <option value="rename_column_modal_standard">重命名列</option>
+        <option value="map_data_tooltip_positioning_fix_v2">Map Data 映射</option>
+      </optgroup>
+      <optgroup label="── 编辑器 ──">
+        <option value="formula_editor_tooltip_overflow_fix_v2">公式编辑器</option>
+        <option value="formula_hover_tooltip_modern_glass">条件比较编辑器</option>
+        <option value="function_editor_refined_logic_hover_menu">函数编辑器 · ROUND</option>
+        <option value="if_logic_editor_title_v1">IF 逻辑编辑器</option>
+      </optgroup>
+      <optgroup label="── 过滤与条件 ──">
+        <option value="filter_fixed_column_v3_ghost_state">设置过滤条件</option>
+        <option value="multi_column_filter_modern_glass_subtitle">多列过滤器</option>
+        <option value="condition_comparison_hint_v1_alert">Join 匹配列配置</option>
+      </optgroup>
+    </select>
+
+    <button class="nav-btn" onclick="navigatePrev()" id="prevBtn" title="上一页 (Alt+←)">
+      <span class="material-symbols-outlined nav-icon">chevron_left</span>
+    </button>
+    <span class="nav-counter" id="pageCounter">1/14</span>
+    <button class="nav-btn" onclick="navigateNext()" id="nextBtn" title="下一页 (Alt+→)">
+      <span class="material-symbols-outlined nav-icon">chevron_right</span>
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="frame-container">
+    <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+    <iframe class="page-frame" id="pageFrame"></iframe>
+  </div>
+</div>
+
+<!-- Navigation Hint -->
+<div class="nav-hint" id="navHint"></div>
+
+<script>
+const HOME = 'sql_editor_create_table_simplified';
+
+const PAGE_ORDER = [
+  'sql_editor_create_table_simplified',
+  'sql_editor_step_1_status_menu_refined',
+  'sql_editor_custom_source_option_added',
+  'sql_editor_step_2_data_rows_v2',
+  'create_column_dark_mono_hover_v1',
+  'rename_column_modal_standard',
+  'map_data_tooltip_positioning_fix_v2',
+  'formula_editor_tooltip_overflow_fix_v2',
+  'formula_hover_tooltip_modern_glass',
+  'function_editor_refined_logic_hover_menu',
+  'if_logic_editor_title_v1',
+  'filter_fixed_column_v3_ghost_state',
+  'multi_column_filter_modern_glass_subtitle',
+  'condition_comparison_hint_v1_alert'
+];
+
+const PAGE_TITLES = {
+  'sql_editor_create_table_simplified': 'Home Page · 建表入口',
+  'sql_editor_step_1_status_menu_refined': '创建普通Table',
+  'sql_editor_custom_source_option_added': '创建合并Table',
+  'sql_editor_step_2_data_rows_v2': '创建统计Table',
+  'create_column_dark_mono_hover_v1': '创建列',
+  'rename_column_modal_standard': '重命名列',
+  'map_data_tooltip_positioning_fix_v2': 'Map Data 映射',
+  'formula_editor_tooltip_overflow_fix_v2': '公式编辑器',
+  'formula_hover_tooltip_modern_glass': '条件比较编辑器',
+  'function_editor_refined_logic_hover_menu': '函数编辑器 · ROUND',
+  'if_logic_editor_title_v1': 'IF 逻辑编辑器',
+  'filter_fixed_column_v3_ghost_state': '设置过滤条件',
+  'multi_column_filter_modern_glass_subtitle': '多列过滤器',
+  'condition_comparison_hint_v1_alert': 'Join 匹配列配置'
+};
+
+// Navigation map: per-page rules matching elements by text to target pages
+const NAV_RULES = {
+  'sql_editor_create_table_simplified': [
+    { text: '创建普通Table', target: 'sql_editor_step_1_status_menu_refined', hint: '→ 创建普通Table' },
+    { text: '创建统计Table', target: 'sql_editor_step_2_data_rows_v2', hint: '→ 创建统计Table' },
+    { text: '创建合并Table', target: 'sql_editor_custom_source_option_added', hint: '→ 创建合并Table' },
+  ],
+  'sql_editor_step_1_status_menu_refined': [
+    { text: '多列过滤', target: 'multi_column_filter_modern_glass_subtitle', hint: '→ 多列过滤器' },
+    { text: '创建列', target: 'create_column_dark_mono_hover_v1', hint: '→ 创建列编辑器' },
+    { text: 'Run Preview', target: 'sql_editor_step_2_data_rows_v2', hint: '→ 创建统计Table' },
+    { text: '提取列', target: 'sql_editor_custom_source_option_added', hint: '→ 创建合并Table' },
+    { text: 'New Table', target: 'sql_editor_create_table_simplified', hint: '→ 返回首页' },
+  ],
+  'sql_editor_custom_source_option_added': [
+    { text: '多列过滤', target: 'multi_column_filter_modern_glass_subtitle', hint: '→ 多列过滤器' },
+    { text: '创建列', target: 'create_column_dark_mono_hover_v1', hint: '→ 创建列编辑器' },
+    { text: '配置匹配条件', target: 'condition_comparison_hint_v1_alert', hint: '→ Join 匹配列配置' },
+    { text: 'Run Preview', target: 'sql_editor_step_2_data_rows_v2', hint: '→ 创建统计Table' },
+    { text: 'New Table', target: 'sql_editor_create_table_simplified', hint: '→ 返回首页' },
+  ],
+  'sql_editor_step_2_data_rows_v2': [
+    { text: '多列过滤', target: 'multi_column_filter_modern_glass_subtitle', hint: '→ 多列过滤器' },
+    { text: '创建列', target: 'create_column_dark_mono_hover_v1', hint: '→ 创建列编辑器' },
+    { text: 'Run Preview', target: 'sql_editor_step_2_data_rows_v2', hint: '→ 刷新预览' },
+    { text: '提取列', target: 'sql_editor_custom_source_option_added', hint: '→ 创建合并Table' },
+    { text: 'New Table', target: 'sql_editor_create_table_simplified', hint: '→ 返回首页' },
+  ],
+  'create_column_dark_mono_hover_v1': [
+    { text: '插入函数', target: 'function_editor_refined_logic_hover_menu', hint: '→ 函数编辑器' },
+    { text: '插入逻辑', target: 'if_logic_editor_title_v1', hint: '→ IF 逻辑编辑器' },
+    { text: '取消', target: '_back', hint: '← 返回上一页' },
+    { text: '确认', target: '_back', hint: '← 确认并返回' },
+  ],
+  'formula_editor_tooltip_overflow_fix_v2': [
+    { text: '插入函数', target: 'function_editor_refined_logic_hover_menu', hint: '→ 函数编辑器' },
+    { text: '插入逻辑', target: 'if_logic_editor_title_v1', hint: '→ IF 逻辑编辑器' },
+    { text: '取消', target: '_back', hint: '← 返回上一页' },
+    { text: '确认', target: '_back', hint: '← 确认并返回' },
+  ],
+  'function_editor_refined_logic_hover_menu': [
+    { text: '取消', target: '_back', hint: '← 返回上一页' },
+    { text: 'Cancel', target: '_back', hint: '← 返回上一页' },
+    { text: '确认', target: '_back', hint: '← 确认并返回' },
+    { text: 'Confirm', target: '_back', hint: '← 确认并返回' },
+  ],
+  'if_logic_editor_title_v1': [
+    { text: 'Condition', target: 'formula_hover_tooltip_modern_glass', hint: '→ 条件比较编辑器', selector: '.bg-purple-600' },
+    { text: '取消', target: '_back', hint: '← 返回上一页' },
+    { text: 'Cancel', target: '_back', hint: '← 返回上一页' },
+    { text: '确认', target: '_back', hint: '← 确认并返回' },
+    { text: 'Confirm', target: '_back', hint: '← 确认并返回' },
+    { text: 'Save', target: '_back', hint: '← 保存并返回' },
+  ],
+  'rename_column_modal_standard': [
+    { text: '取消', target: '_back', hint: '← 返回上一页' },
+    { text: 'Cancel', target: '_back', hint: '← 返回上一页' },
+    { text: '确认', target: '_back', hint: '← 确认并返回' },
+    { text: 'Confirm', target: '_back', hint: '← 确认并返回' },
+    { text: 'Save', target: '_back', hint: '← 保存并返回' },
+    { text: 'Rename', target: '_back', hint: '← 重命名并返回' },
+  ],
+  'map_data_tooltip_positioning_fix_v2': [
+    { text: '取消', target: '_back', hint: '← 返回上一页' },
+    { text: '确认', target: '_back', hint: '← 确认并返回' },
+    { text: 'Cancel', target: '_back', hint: '← 返回上一页' },
+    { text: 'Save', target: '_back', hint: '← 保存并返回' },
+    { text: 'Confirm', target: '_back', hint: '← 确认并返回' },
+  ],
+  'filter_fixed_column_v3_ghost_state': [
+    { text: '取消', target: '_back', hint: '← 返回上一页' },
+    { text: '确认', target: '_back', hint: '← 确认并返回' },
+    { text: '应用', target: '_back', hint: '← 应用并返回' },
+    { text: 'Apply', target: '_back', hint: '← 应用并返回' },
+  ],
+  'multi_column_filter_modern_glass_subtitle': [
+    { text: '取消', target: '_back', hint: '← 返回上一页' },
+    { text: '确认', target: '_back', hint: '← 确认并返回' },
+    { text: '应用', target: '_back', hint: '← 应用并返回' },
+    { text: 'Apply', target: '_back', hint: '← 应用并返回' },
+  ],
+  'condition_comparison_hint_v1_alert': [
+    { text: '取消', target: '_back', hint: '← 返回上一页' },
+    { text: '确认', target: '_back', hint: '← 确认并返回' },
+    { text: 'Cancel', target: '_back', hint: '← 返回上一页' },
+    { text: 'Save', target: '_back', hint: '← 保存并返回' },
+  ],
+  'formula_hover_tooltip_modern_glass': [
+    { text: '取消', target: '_back', hint: '← 返回上一页' },
+    { text: '确认', target: '_back', hint: '← 确认并返回' },
+    { text: 'Apply', target: '_back', hint: '← 应用并返回' },
+  ],
+};
+
+// Sidebar navigation: map sidebar icon labels to pages
+const SIDEBAR_NAV = {
+  'N1': 'sql_editor_step_1_status_menu_refined',
+  'S1': 'sql_editor_step_2_data_rows_v2',
+  'M1': 'sql_editor_custom_source_option_added',
+  'Tables': 'sql_editor_step_1_status_menu_refined',
+  'Joins': 'sql_editor_custom_source_option_added',
+  'Filters': 'filter_fixed_column_v3_ghost_state',
+  'Columns': 'create_column_dark_mono_hover_v1',
+};
+
+// Sidebar funnel table names → target pages
+const SIDEBAR_FUNNEL_NAV = {
+  'raw_transactions_v1':  'sql_editor_step_1_status_menu_refined',
+  'v_user_billing_balance_transactions_summarized_q4': 'sql_editor_step_2_data_rows_v2',
+  'v_user_billing_summarized_q4': 'sql_editor_step_2_data_rows_v2',
+  'v_billing_q4': 'sql_editor_custom_source_option_added',
+};
+
+// Which sidebar tab (N1/S1/M1) is active for each page
+const PAGE_TO_SIDEBAR_TAB = {
+  'sql_editor_create_table_simplified': null,
+  'sql_editor_step_1_status_menu_refined': 'N1',
+  'sql_editor_custom_source_option_added': 'N1',
+  'sql_editor_step_2_data_rows_v2': 'S1',
+  'sql_editor_custom_source_option_added': 'M1',
+};
+
+let currentPage = HOME;
+let navHistory = [];
+const frame = document.getElementById('pageFrame');
+const loading = document.getElementById('loadingOverlay');
+const pageSelect = document.getElementById('pageSelect');
+const pageCounter = document.getElementById('pageCounter');
+const pageTitle = document.getElementById('pageTitle');
+const navHint = document.getElementById('navHint');
+let hintTimer = null;
+
+function getPagePath(name) {
+  return `stitch_create_new_task_start/${name}/code.html`;
+}
+
+function showHint(text) {
+  navHint.textContent = text;
+  navHint.classList.add('show');
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => navHint.classList.remove('show'), 1800);
+}
+
+function goHome() {
+  navigateToPage(HOME);
+}
+
+function goBack() {
+  if (navHistory.length > 0) {
+    const prev = navHistory.pop();
+    loadPage(prev, false);
+  } else {
+    loadPage(HOME, false);
+  }
+}
+
+function navigateToPage(name, addToHistory = true) {
+  if (addToHistory && currentPage && currentPage !== name) {
+    navHistory.push(currentPage);
+  }
+  loadPage(name, false);
+}
+
+function loadPage(name, addToHistory = false) {
+  loading.classList.remove('hidden');
+  currentPage = name;
+  pageSelect.value = name;
+  const idx = PAGE_ORDER.indexOf(name);
+  pageCounter.textContent = `${idx + 1}/${PAGE_ORDER.length}`;
+  pageTitle.textContent = PAGE_TITLES[name] || name;
+  document.title = `Visual Data Builder - ${PAGE_TITLES[name] || ''}`;
+
+  const url = new URL(window.location);
+  url.searchParams.set('page', name);
+  window.history.replaceState({}, '', url);
+
+  frame.src = getPagePath(name);
+}
+
+function navigatePrev() {
+  const idx = PAGE_ORDER.indexOf(currentPage);
+  if (idx > 0) navigateToPage(PAGE_ORDER[idx - 1]);
+}
+
+function navigateNext() {
+  const idx = PAGE_ORDER.indexOf(currentPage);
+  if (idx < PAGE_ORDER.length - 1) navigateToPage(PAGE_ORDER[idx + 1]);
+}
+
+function findElementsByText(doc, text, selectorHint) {
+  const results = [];
+  if (selectorHint) {
+    const els = doc.querySelectorAll(selectorHint);
+    els.forEach(el => {
+      if (el.textContent.trim().includes(text)) results.push(el);
+    });
+    if (results.length) return results;
+    // If selector+text didn't match, try just the selector for capsule-style elements
+    els.forEach(el => results.push(el.closest('[class*="inline-flex"]') || el.parentElement || el));
+    if (results.length) return results;
+  }
+  const all = doc.querySelectorAll('button, a, [role="button"], .cursor-pointer, [onclick]');
+  all.forEach(el => {
+    const elText = el.textContent.trim();
+    if (elText === text || elText.includes(text)) {
+      // Avoid matching if the element is too large (like a main container)
+      if (el.textContent.length < text.length + 80) {
+        results.push(el);
+      }
+    }
+  });
+  return results;
+}
+
+// Pages with centered card modal (own header/sidebar/footer to hide, content fills center)
+const CARD_MODAL_PAGES = [
+  'create_column_dark_mono_hover_v1',
+  'formula_editor_tooltip_overflow_fix_v2',
+];
+
+// Pages with overlay modal on top of background content
+const OVERLAY_MODAL_PAGES = [
+  'rename_column_modal_standard',
+];
+
+// Pages with outer sidebar to strip but inner modal sidebar to keep
+const PANEL_MODAL_PAGES = [
+  'function_editor_refined_logic_hover_menu',
+];
+
+function fixIframeLayout() {
+  let doc;
+  try { doc = frame.contentDocument || frame.contentWindow.document; }
+  catch(e) { return; }
+  if (!doc || !doc.body) return;
+
+  let css = `
+    html, body {
+      height: 100% !important;
+      min-height: 100vh !important;
+      max-height: none !important;
+      overflow: auto !important;
+    }
+    /* Prevent dropdown menus from being clipped by modal containers */
+    .overflow-hidden:not(body):not(html),
+    [class*="rounded-xl"][class*="shadow"],
+    [class*="rounded-xl"][class*="border"],
+    [class*="rounded-lg"][class*="shadow"],
+    [class*="rounded-custom"][class*="shadow"],
+    section[class*="shadow"],
+    [data-purpose="modal-content"] {
+      overflow: visible !important;
+    }
+  `;
+
+  // Fix tooltip arrows on capsules (IF/ROUND) in formula editors
+  if (currentPage === 'formula_editor_tooltip_overflow_fix_v2' || currentPage === 'create_column_dark_mono_hover_v1') {
+    css += `
+      /* Force tooltips above source with correct downward arrow */
+      .tooltip-content {
+        bottom: 100% !important;
+        top: auto !important;
+        margin-bottom: 16px !important;
+        margin-top: 0 !important;
+      }
+      .tooltip-content > div > div:last-child,
+      .tooltip-content div[class*="rotate-45"] {
+        bottom: -6px !important;
+        top: auto !important;
+        border-right: 1px solid rgba(51,65,85,0.5) !important;
+        border-bottom: 1px solid rgba(51,65,85,0.5) !important;
+        border-left: none !important;
+        border-top: none !important;
+      }
+      /* Create column page: add arrow to custom-tooltip */
+      .custom-tooltip {
+        border-radius: 8px !important;
+      }
+      .custom-tooltip::after {
+        content: '';
+        position: absolute;
+        bottom: -6px;
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        width: 12px;
+        height: 12px;
+        background-color: #1a1a1a;
+        border-right: 1px solid #333;
+        border-bottom: 1px solid #333;
+      }
+    `;
+  }
+
+  if (CARD_MODAL_PAGES.includes(currentPage)) {
+    css += `
+      body > header { display: none !important; }
+      body > main > aside { display: none !important; }
+      body > footer { display: none !important; }
+      body > main {
+        min-height: 100vh !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      body > main > div,
+      body > main > .flex-1 {
+        padding: 2rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+    `;
+  }
+
+  if (OVERLAY_MODAL_PAGES.includes(currentPage)) {
+    css += `
+      body > header { display: none !important; }
+      body > aside { display: none !important; }
+      body > main { display: none !important; }
+      body {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #f1f4f6 !important;
+      }
+      body > div.fixed {
+        position: relative !important;
+        inset: auto !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        width: auto !important;
+        height: auto !important;
+      }
+    `;
+  }
+
+  if (PANEL_MODAL_PAGES.includes(currentPage)) {
+    css += `
+      body > header { display: none !important; }
+      body > main > aside { display: none !important; }
+      body > main {
+        min-height: 100vh !important;
+      }
+      body > main > section {
+        padding: 2rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      body > main > section > .absolute.inset-0 {
+        display: none !important;
+      }
+    `;
+  }
+
+  const style = doc.createElement('style');
+  style.textContent = css;
+  doc.head.appendChild(style);
+
+  // Disable formula editor's dynamic tooltip flipping script
+  if (currentPage === 'formula_editor_tooltip_overflow_fix_v2') {
+    try {
+      doc.querySelectorAll('.tooltip-trigger').forEach(trigger => {
+        const clone = trigger.cloneNode(true);
+        trigger.parentNode.replaceChild(clone, trigger);
+      });
+    } catch(e) {}
+  }
+}
+
+function injectNavigation(pageName) {
+  let doc;
+  try { doc = frame.contentDocument || frame.contentWindow.document; }
+  catch(e) { return; }
+  if (!doc) return;
+
+  const rules = NAV_RULES[pageName] || [];
+
+  rules.forEach(rule => {
+    const elements = findElementsByText(doc, rule.text, rule.selector);
+    elements.forEach(el => {
+      if (el.dataset.navBound) return;
+      el.dataset.navBound = 'true';
+      el.style.cursor = 'pointer';
+
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (rule.target === '_back') {
+          goBack();
+        } else {
+          navigateToPage(rule.target);
+        }
+        showHint(rule.hint);
+      }, true);
+    });
+  });
+
+  // IF capsule (amber) → IF logic editor, ROUND capsule (emerald) → function editor
+  // Bind the ENTIRE capsule container, not just the label
+  const CAPSULE_PAGES = ['create_column_dark_mono_hover_v1', 'formula_editor_tooltip_overflow_fix_v2'];
+  if (CAPSULE_PAGES.includes(pageName)) {
+    // Find capsules by their border color and bind the outermost interactive container
+    doc.querySelectorAll('[class*="border-amber"], .tooltip-container, .tooltip-trigger').forEach(el => {
+      if (el.dataset.navBound) return;
+      const txt = el.textContent;
+      if (txt.includes('IF') && txt.includes('Complex_Validation_Branch')) {
+        el.dataset.navBound = 'true';
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          navigateToPage('if_logic_editor_title_v1');
+          showHint('→ IF 逻辑编辑器');
+        }, true);
+      }
+    });
+    doc.querySelectorAll('[class*="border-emerald"], .tooltip-container, .tooltip-trigger').forEach(el => {
+      if (el.dataset.navBound) return;
+      const txt = el.textContent;
+      if (txt.includes('ROUND') && txt.includes('APP_User_Balance')) {
+        el.dataset.navBound = 'true';
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          navigateToPage('function_editor_refined_logic_hover_menu');
+          showHint('→ 函数编辑器 · ROUND');
+        }, true);
+      }
+    });
+
+    // "插入字段" button → click to show field dropdown
+    doc.querySelectorAll('button').forEach(btn => {
+      if (btn.dataset.navBound || btn.textContent.trim() !== '插入字段') return;
+      btn.dataset.navBound = 'true';
+      btn.style.position = 'relative';
+      btn.style.overflow = 'visible';
+
+      const FIELDS = [
+        { icon: 'description', name: 'transaction_id' },
+        { icon: 'mail', name: 'customer_email' },
+        { icon: 'payments', name: 'amount_usd' },
+        { icon: 'currency_exchange', name: 'currency' },
+        { icon: 'check_circle', name: 'status' },
+        { icon: 'calendar_today', name: 'created_at' },
+      ];
+
+      const dropdown = doc.createElement('div');
+      dropdown.style.cssText = 'display:none;position:absolute;bottom:100%;left:0;margin-bottom:6px;min-width:280px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 20px 40px -8px rgba(0,0,0,0.12);padding:4px 0;z-index:200;';
+      dropdown.innerHTML =
+        '<div style="padding:6px 12px;background:#f8fafc;border-bottom:1px solid #f1f5f9;margin-bottom:2px;font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">production.raw_transactions</div>' +
+        FIELDS.map(f =>
+          '<div class="field-dropdown-item" style="padding:7px 14px;font-size:12px;color:#475569;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.15s;">' +
+          '<span class="material-symbols-outlined" style="font-size:16px;opacity:0.4;">' + f.icon + '</span>' +
+          '<span>production_raw_transactions.' + f.name + '</span></div>'
+        ).join('');
+      btn.appendChild(dropdown);
+
+      // Hover highlight
+      dropdown.querySelectorAll('.field-dropdown-item').forEach(item => {
+        item.addEventListener('mouseenter', () => { item.style.background = 'rgba(0,52,111,0.05)'; item.style.color = '#00346f'; });
+        item.addEventListener('mouseleave', () => { item.style.background = ''; item.style.color = '#475569'; });
+      });
+
+      // Toggle on click
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const isOpen = dropdown.style.display === 'block';
+        dropdown.style.display = isOpen ? 'none' : 'block';
+      }, true);
+
+      // Close when clicking elsewhere
+      doc.addEventListener('click', () => { dropdown.style.display = 'none'; });
+    });
+  }
+
+  // M1 page: merge-option click toggles "配置匹配条件" button visibility
+  if (pageName === 'sql_editor_custom_source_option_added') {
+    const joinBtn = doc.getElementById('joinConfigArea');
+    const mergeOptions = doc.querySelectorAll('.merge-option');
+    if (joinBtn && mergeOptions.length) {
+      mergeOptions.forEach((opt, idx) => {
+        opt.addEventListener('click', () => {
+          mergeOptions.forEach(o => o.classList.remove('active'));
+          opt.classList.add('active');
+          // idx 0=Inner Join, 1=Left Join, 2=Right Join → show button; 3=Union ALL → hide
+          joinBtn.style.display = idx < 3 ? 'block' : 'none';
+        });
+      });
+    }
+  }
+
+  // IF editor: bind Condition capsule + "添加条件比较公式" button → condition comparison editor
+  if (pageName === 'if_logic_editor_title_v1') {
+    const CONDITION_TARGET = 'formula_hover_tooltip_modern_glass';
+    // Purple Condition capsule
+    doc.querySelectorAll('.capsule-container, [class*="border-purple"]').forEach(el => {
+      if (el.dataset.navBound) return;
+      const txt = el.textContent;
+      if (txt.includes('Condition') || txt.includes('REVENUE')) {
+        el.dataset.navBound = 'true';
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          navigateToPage(CONDITION_TARGET);
+          showHint('→ 条件比较编辑器');
+        }, true);
+      }
+    });
+    // "添加条件比较公式" button
+    doc.querySelectorAll('button').forEach(el => {
+      if (el.dataset.navBound) return;
+      if (el.textContent.trim().includes('添加条件比较公式')) {
+        el.dataset.navBound = 'true';
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          navigateToPage(CONDITION_TARGET);
+          showHint('→ 条件比较编辑器');
+        }, true);
+      }
+    });
+  }
+
+  // Sidebar icon navigation (N1, S1, M1) + active state
+  const activeTab = PAGE_TO_SIDEBAR_TAB[pageName];
+  const sidebarIcons = doc.querySelectorAll('.sidebar-icons div, .sidebar-icons span');
+  sidebarIcons.forEach(el => {
+    const txt = el.textContent.trim();
+    if (!SIDEBAR_NAV[txt]) return;
+
+    // Update visual active state for N1/S1/M1
+    if (txt === 'N1' || txt === 'S1' || txt === 'M1') {
+      if (txt === activeTab) {
+        el.className = 'w-8 h-8 flex items-center justify-center text-[10px] font-bold text-primary cursor-pointer bg-primary/10 border-l-2 border-primary rounded-r-sm relative';
+      } else {
+        el.className = 'w-8 h-8 flex items-center justify-center rounded-lg text-[10px] font-bold text-slate-500 cursor-pointer hover:border-slate-400 hover:bg-slate-200 transition-all';
+      }
+    }
+
+    if (!el.dataset.navBound) {
+      el.dataset.navBound = 'true';
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigateToPage(SIDEBAR_NAV[txt]);
+        showHint(`→ ${PAGE_TITLES[SIDEBAR_NAV[txt]]}`);
+      }, true);
+    }
+  });
+
+  // Sidebar funnel table names (raw_transactions_v1, v_user_billing_..., v_billing_q4)
+  const funnelItems = doc.querySelectorAll('.sidebar-content span, .sidebar-content div, aside span, aside div');
+  funnelItems.forEach(el => {
+    const txt = el.textContent.trim();
+    const target = SIDEBAR_FUNNEL_NAV[txt];
+    if (!target || el.dataset.navBound) return;
+    if (el.children.length > 1) return;
+
+    const clickTarget = el.closest('.funnel-connector > div, .px-4') || el.parentElement;
+    if (!clickTarget || clickTarget.dataset.navBound) return;
+    clickTarget.dataset.navBound = 'true';
+    clickTarget.style.cursor = 'pointer';
+    clickTarget.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      navigateToPage(target);
+      showHint(`→ ${PAGE_TITLES[target]}`);
+    }, true);
+  });
+
+  // Update funnel active state in expanded sidebar
+  if (activeTab) {
+    const funnelConnectors = doc.querySelectorAll('.funnel-connector');
+    const tabToIndex = { 'N1': 0, 'S1': 1, 'M1': 2 };
+    const activeIndex = tabToIndex[activeTab];
+    funnelConnectors.forEach((fc, idx) => {
+      const inner = fc.querySelector('div');
+      if (!inner) return;
+      if (idx === activeIndex) {
+        inner.classList.remove('border-slate-200', 'border');
+        inner.classList.add('border-2', 'border-primary');
+        inner.querySelectorAll('span.font-headline').forEach(s => {
+          s.classList.remove('text-slate-700');
+          s.classList.add('text-primary');
+        });
+        inner.querySelectorAll('span.text-slate-400, span.text-\\[10px\\]').forEach(s => {
+          if (s.classList.contains('text-slate-400') && s.textContent.includes('Table')) {
+            s.classList.remove('text-slate-400');
+            s.classList.add('text-primary/60');
+          }
+        });
+      } else {
+        inner.classList.remove('border-2', 'border-primary', 'shadow-[0_4px_12px_rgba(0,52,111,0.08)]');
+        inner.classList.add('border', 'border-slate-200');
+        inner.querySelectorAll('span.text-primary.font-headline').forEach(s => {
+          s.classList.remove('text-primary');
+          s.classList.add('text-slate-700');
+        });
+        const leftBar = inner.querySelector('.bg-primary.w-1');
+        if (leftBar) leftBar.remove();
+        inner.querySelectorAll('span.material-symbols-outlined').forEach(ic => {
+          ic.classList.remove('text-primary');
+          ic.classList.add('text-slate-400');
+        });
+      }
+    });
+  }
+
+  // Other sidebar nav items (Tables, Joins, Filters, Columns)
+  const sidebarOther = doc.querySelectorAll('aside div, aside span, aside a');
+  sidebarOther.forEach(el => {
+    const txt = el.textContent.trim();
+    if (SIDEBAR_NAV[txt] && !el.dataset.navBound && !['N1','S1','M1'].includes(txt)) {
+      el.dataset.navBound = 'true';
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigateToPage(SIDEBAR_NAV[txt]);
+        showHint(`→ ${PAGE_TITLES[SIDEBAR_NAV[txt]]}`);
+      }, true);
+    }
+  });
+
+  // Close buttons (X icon, SVG close) → go back
+  const closeButtons = doc.querySelectorAll('[data-purpose="modal-overlay"] button svg, button:has(path[d*="M6 18L18 6"])');
+  closeButtons.forEach(el => {
+    const btn = el.closest('button') || el;
+    if (!btn.dataset.navBound) {
+      btn.dataset.navBound = 'true';
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        goBack();
+        showHint('← 返回上一页');
+      }, true);
+    }
+  });
+
+  // Top nav "Dashboard" → home
+  const topNavLinks = doc.querySelectorAll('header a, nav a');
+  topNavLinks.forEach(a => {
+    const txt = a.textContent.trim();
+    if (txt === 'Dashboard' && !a.dataset.navBound) {
+      a.dataset.navBound = 'true';
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        goHome();
+        showHint('→ 返回首页');
+      }, true);
+    }
+  });
+
+  // Global: all "FORMULA" / "Formula" buttons, dropdown items & capsules → formula editor
+  const FORMULA_TARGET = 'formula_editor_tooltip_overflow_fix_v2';
+  if (pageName !== FORMULA_TARGET) {
+    function bindFormulaNav(el) {
+      if (!el || el.dataset.navBound) return;
+      el.dataset.navBound = 'true';
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigateToPage(FORMULA_TARGET);
+        showHint('→ 公式编辑器');
+      }, true);
+    }
+
+    // 1) Direct buttons/div with exact FORMULA text
+    const allClickables = doc.querySelectorAll('button, .dropdown-item, [role="button"], a');
+    allClickables.forEach(el => {
+      const txt = el.textContent.trim();
+      if (/^FORMULA$/i.test(txt)) {
+        bindFormulaNav(el);
+      }
+    });
+
+    // 2) Span/div containing "Formula"/"FORMULA" — bind self or closest button (NOT parent container)
+    doc.querySelectorAll('span, div').forEach(el => {
+      const txt = el.textContent.trim();
+      if (!/^FORMULA$/i.test(txt) && txt !== 'Formula') return;
+      if (el.children.length > 2) return;
+      const btn = el.closest('button, a');
+      const target = btn || (el.classList.contains('dropdown-item') ? el : el.closest('.dropdown-item')) || el;
+      bindFormulaNav(target);
+    });
+
+    // 3) FORMULA capsules (indigo-styled formula display elements)
+    doc.querySelectorAll('[class*="formula-capsule"], [class*="bg-indigo-5"], [class*="bg-indigo-6"]').forEach(el => {
+      bindFormulaNav(el);
+    });
+  }
+
+  // Global: all "Map Data" menu items → Map Data modal
+  bindMenuItems(doc, /\bMap Data\b/, 'map_data_tooltip_positioning_fix_v2', '→ Map Data 映射');
+
+  // Global helper: bind dropdown menu items by scanning leaf spans AND small buttons
+  function bindMenuItems(doc, labelRegex, targetPage, hint) {
+    if (pageName === targetPage) return;
+    // 1) Leaf spans with exact text
+    doc.querySelectorAll('span').forEach(el => {
+      if (el.dataset.navBound || el.children.length > 0) return;
+      if (labelRegex.test(el.textContent.trim())) {
+        const btn = el.closest('button, a') || el.parentElement;
+        if (btn && !btn.dataset.navBound) {
+          btn.dataset.navBound = 'true';
+          btn.style.cursor = 'pointer';
+          btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); navigateToPage(targetPage); showHint(hint); }, true);
+        }
+      }
+    });
+    // 2) Small buttons whose full text ends with the label (icon text + label)
+    doc.querySelectorAll('button, a').forEach(el => {
+      if (el.dataset.navBound) return;
+      const txt = el.textContent.trim();
+      if (txt.length > 60) return;
+      if (labelRegex.test(txt) && el.querySelectorAll('button, a').length === 0) {
+        el.dataset.navBound = 'true';
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); navigateToPage(targetPage); showHint(hint); }, true);
+      }
+    });
+  }
+
+  bindMenuItems(doc, /\bRename\b/, 'rename_column_modal_standard', '→ 重命名列');
+  bindMenuItems(doc, /^(filter_alt\s*)?Filter$/, 'filter_fixed_column_v3_ghost_state', '→ 设置过滤条件');
+
+  // Global: "Select Field" elements get a hover submenu with field list
+  (function injectSelectFieldSubmenus() {
+    const FIELDS = [
+      { icon: 'description', name: 'transaction_id' },
+      { icon: 'mail', name: 'customer_email' },
+      { icon: 'payments', name: 'amount_usd' },
+      { icon: 'currency_exchange', name: 'currency' },
+      { icon: 'check_circle', name: 'status' },
+      { icon: 'calendar_today', name: 'created_at' },
+    ];
+
+    if (!doc.getElementById('sf-submenu-style')) {
+      const style = doc.createElement('style');
+      style.id = 'sf-submenu-style';
+      style.textContent = `
+        .sf-host { position: relative !important; }
+        .sf-host > .sf-submenu {
+          display: none;
+          position: absolute;
+          left: 100%;
+          top: 0;
+          min-width: 260px;
+          margin-left: 4px;
+          z-index: 200;
+          background: #fff;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          box-shadow: 0 20px 40px -8px rgba(0,0,0,0.12);
+          padding: 4px 0;
+        }
+        .sf-host:hover > .sf-submenu { display: block; }
+        .sf-submenu-hd {
+          padding: 6px 12px; background: #f8fafc;
+          border-bottom: 1px solid #f1f5f9; margin-bottom: 2px;
+          font-size: 9px; font-weight: 700; color: #94a3b8;
+          text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .sf-submenu-row {
+          padding: 7px 14px; font-size: 12px; color: #475569;
+          cursor: pointer; display: flex; align-items: center; gap: 8px;
+          transition: all 0.15s;
+        }
+        .sf-submenu-row:hover { background: rgba(0,52,111,0.05); color: #00346f; }
+        .sf-submenu-row .material-symbols-outlined { font-size: 16px; opacity: 0.4; }
+      `;
+      doc.head.appendChild(style);
+    }
+
+    const submenuHTML =
+      '<div class="sf-submenu">' +
+      '<div class="sf-submenu-hd">production.raw_transactions</div>' +
+      FIELDS.map(f =>
+        '<div class="sf-submenu-row"><span class="material-symbols-outlined">' + f.icon + '</span><span>production_raw_transactions.' + f.name + '</span></div>'
+      ).join('') + '</div>';
+
+    // Find all elements (span, div, button) containing exactly "Select Field"
+    doc.querySelectorAll('span, div, button').forEach(el => {
+      const txt = el.textContent.trim();
+      if (txt !== 'Select Field' && !/^database\s*Select Field$/.test(txt)) return;
+      if (el.children.length > 3) return;
+
+      const host = el.closest('button, .dropdown-item') || el;
+      if (host.dataset.sfBound) return;
+      host.dataset.sfBound = 'true';
+      host.classList.add('sf-host');
+      host.style.overflow = 'visible';
+      host.insertAdjacentHTML('beforeend', submenuHTML);
+
+      // Fix ancestor overflow:hidden clipping the submenu
+      let ancestor = host.parentElement;
+      for (let i = 0; i < 6 && ancestor; i++) {
+        const cs = doc.defaultView.getComputedStyle(ancestor);
+        if (cs.overflow === 'hidden' || cs.overflowX === 'hidden' || cs.overflowY === 'hidden') {
+          ancestor.style.overflow = 'visible';
+        }
+        ancestor = ancestor.parentElement;
+      }
+    });
+  })();
+}
+
+frame.addEventListener('load', () => {
+  loading.classList.add('hidden');
+  fixIframeLayout();
+  setTimeout(() => injectNavigation(currentPage), 200);
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.altKey && e.key === 'ArrowLeft') { e.preventDefault(); navigatePrev(); }
+  if (e.altKey && e.key === 'ArrowRight') { e.preventDefault(); navigateNext(); }
+  if (e.altKey && e.key === 'h') { e.preventDefault(); goHome(); }
+  if (e.key === 'Escape') { e.preventDefault(); goBack(); }
+});
+
+// Init
+(function init() {
+  const params = new URLSearchParams(window.location.search);
+  const page = params.get('page') || HOME;
+  loadPage(page);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IF Logic Editor - Lumina Ledger V2</title>
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Manrope -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#004a99',
+            'slate-50': '#f8fafc',
+            'slate-100': '#f1f5f9',
+            'slate-200': '#e2e8f0',
+            'slate-300': '#cbd5e1',
+            'slate-400': '#94a3b8',
+            'slate-500': '#64748b',
+          },
+          fontFamily: {
+            sans: ['Manrope', 'sans-serif'],
+          },
+          borderRadius: {
+            'custom': '4px',
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="layout-styles">
+    body {
+      font-family: 'Manrope', sans-serif;
+      background-color: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    /* Vertical connector lines for flow aesthetic */
+    .flow-connector-vertical {
+      position: absolute;
+      left: 11px;
+      top: 24px;
+      bottom: -24px;
+      width: 2px;
+      background-color: #e2e8f0;
+      z-index: 0;
+    }
+
+    .flow-node-dot {
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Logic group dashed border */
+    .logic-group {
+      border: 1px dashed #cbd5e1;
+      position: relative;
+    }
+
+    .logic-label-side {
+      font-size: 10px;
+      font-weight: 700;
+      color: #3b82f6;
+      text-transform: uppercase;
+    }
+
+    .input-shadow {
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    /* Glassmorphism Tooltip Styles */
+    .glass-tooltip {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    }
+
+    .capsule-container:hover .glass-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+  
+    /* Dropdown Styles for V2 */
+    .dropdown-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      z-index: 100;
+      min-width: 140px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      padding: 4px 0;
+      margin-top: 4px;
+    }
+    .dropdown-container:hover .dropdown-menu {
+      display: block;
+    }
+    .dropdown-item {
+      padding: 8px 16px;
+      font-size: 14px;
+      color: #475569;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .dropdown-item:hover {
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+  </style>
+</head>
+<body class="p-6">
+<!-- BEGIN: LogicEditorModal -->
+<main class="bg-white w-full max-w-4xl rounded-custom shadow-2xl overflow-hidden border border-slate-200" data-purpose="logic-editor-container">
+<!-- BEGIN: Header Section -->
+<header class="p-8 border-b border-slate-100 flex justify-center items-center">
+<h1 class="text-2xl font-bold text-slate-900 tracking-tight">条件选择编辑器</h1>
+</header>
+<!-- END: Header Section -->
+<!-- BEGIN: Logic Workflow -->
+<section class="p-8 space-y-8 relative">
+<!-- BEGIN: IF Block -->
+<div class="relative group">
+<!-- Flow line -->
+<div class="flow-connector-vertical group-last:hidden"></div>
+<div class="flex items-start gap-6">
+<div class="mt-1 flex flex-col items-center">
+<div class="flow-node-dot w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-bold text-slate-900 mb-4 tracking-tight" style="">如果符合如下条件</h3>
+<!-- Logic Capsule replaces "添加条件比较公式" button -->
+<div class="relative capsule-container">
+<div class="w-full inline-flex items-stretch rounded-lg border border-purple-200 overflow-visible shadow-sm h-12 bg-white cursor-pointer hover:border-purple-300 transition-all relative">
+<div class="bg-purple-600 px-3 flex items-center gap-2 border-r border-purple-700 rounded-l-lg">
+<span class="material-symbols-outlined text-white text-base" data-icon="account_tree" style="">account_tree</span>
+<span class="text-white font-bold font-mono text-xs uppercase" style="">Condition</span>
+</div>
+<div class="bg-purple-50 flex-1 px-4 flex items-center hover:bg-purple-100 transition-colors rounded-r-lg">
+<span class="text-purple-800 font-semibold text-sm" style="">REVENUE &gt; 5000</span>
+</div>
+<button class="absolute -top-1.5 -right-1.5 text-purple-400 hover:text-purple-600 transition-colors flex items-center justify-center bg-white rounded-full shadow-sm z-10" title="Remove">
+<span class="material-symbols-outlined" style="font-size: 14px; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;">cancel</span>
+</button>
+</div>
+<!-- SQL Tooltip -->
+<div class="glass-tooltip absolute z-50 left-0 top-full mt-2 p-4 rounded-lg w-full max-w-lg pointer-events-none">
+<div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2" style="">Compiled SQL Logic</div>
+<code class="block text-xs font-mono text-slate-700 whitespace-pre leading-relaxed">SELECT *
+FROM transactions
+WHERE revenue &gt; 5000 
+  AND status = 'completed'
+  AND (region = 'APAC' OR region = 'EMEA');</code>
+</div>
+</div>
+<!-- Result Input -->
+<div class="flex items-center gap-4 mt-6">
+<span class="text-xs font-bold text-slate-400 uppercase w-auto" style="">则本行的值为</span>
+<div class="flex-1 relative capsule-container">
+<div class="inline-flex w-full items-stretch rounded-lg border border-indigo-200 overflow-visible shadow-sm h-12 bg-white relative">
+<div class="bg-indigo-600 px-3 flex items-center gap-2 border-r border-indigo-700 rounded-l-lg">
+<span class="material-symbols-outlined text-white text-base" data-icon="calculate" style="">calculate</span>
+<span class="text-white font-bold font-mono text-xs uppercase" style="">Formula</span>
+</div>
+<div class="bg-indigo-50 flex-1 px-4 flex items-center hover:bg-indigo-100 cursor-pointer transition-colors rounded-r-lg">
+<span class="text-indigo-800 font-semibold text-sm" style="">Transaction_Type</span>
+</div>
+<button class="absolute -top-1.5 -right-1.5 text-indigo-400 hover:text-indigo-600 transition-colors flex items-center justify-center bg-white rounded-full shadow-sm z-10" title="Remove">
+<span class="material-symbols-outlined" style="font-size: 14px; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;">cancel</span>
+</button>
+</div>
+<!-- SQL Tooltip -->
+<div class="glass-tooltip absolute z-50 left-0 top-full mt-2 p-4 rounded-lg w-full max-w-lg pointer-events-none">
+<div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2" style="">Computed Column Value</div>
+<code class="block text-xs font-mono text-slate-700 whitespace-pre leading-relaxed">CASE 
+  WHEN t.type IS NOT NULL THEN CAST(t.type AS VARCHAR)
+  ELSE 'Uncategorized'
+END AS customer_segment</code>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- END: IF Block -->
+<!-- BEGIN: ELSE IF Block -->
+<div class="relative group">
+<!-- Flow line -->
+<div class="flow-connector-vertical group-last:hidden"></div>
+<div class="flex items-start gap-6">
+<div class="mt-1 flex flex-col items-center">
+<div class="flow-node-dot w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-bold text-slate-900 mb-4 tracking-tight uppercase" style="">如果符合如下条件</h3>
+<!-- Logical Groups replaced with single button -->
+<button class="w-full bg-slate-50 border border-slate-200 rounded-custom p-4 text-sm text-slate-600 hover:bg-slate-100 hover:border-slate-300 transition-all text-left flex items-center gap-2" style="">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+  添加条件比较公式
+</button>
+<!-- Result Input -->
+<div class="flex items-center gap-4 mt-6">
+<span class="text-xs font-bold text-slate-400 uppercase w-auto" style="">则本行的值为</span>
+<div class="flex-1 dropdown-container">
+<div class="inline-flex w-full items-center justify-between rounded-lg border border-dashed border-slate-300 overflow-hidden h-12 bg-slate-50/50 hover:bg-slate-50 transition-colors cursor-pointer px-4 group/value">
+<span class="text-slate-400 font-medium text-sm">请输入</span>
+<span class="material-symbols-outlined text-slate-400 text-lg">arrow_drop_down</span>
+</div>
+<div class="dropdown-menu">
+<div class="dropdown-item">Select Field</div>
+<div class="dropdown-item">Formula</div>
+</div>
+</div>
+</div>
+<!-- Add Rule Button -->
+<button class="w-full mt-6 py-3 border border-blue-500 text-blue-600 text-sm font-semibold rounded-custom hover:bg-blue-50 transition-colors" style="">
+              + Add Rule
+            </button>
+</div>
+</div>
+</div>
+<!-- END: ELSE IF Block -->
+<!-- BEGIN: ELSE Block -->
+<div class="relative group">
+<div class="flex items-start gap-6">
+<div class="mt-1 flex flex-col items-center">
+<div class="flow-node-dot w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200">
+<!-- Dot for leaf node -->
+<div class="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
+</div>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-bold text-slate-900 mb-4 tracking-tight" style="">不符合上述所有条件，则本行的值为</h3>
+<div class="dropdown-container">
+<div class="w-full bg-slate-50 border border-transparent rounded-custom p-4 text-sm text-slate-600 flex items-center justify-between cursor-pointer input-shadow hover:border-slate-200 transition-all">
+<span class="text-slate-300">请输入</span>
+<span class="material-symbols-outlined text-slate-400 text-lg">arrow_drop_down</span>
+</div>
+<div class="dropdown-menu">
+<div class="dropdown-item">Select Field</div>
+<div class="dropdown-item">Formula</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- END: ELSE Block -->
+</section>
+<!-- END: Logic Workflow -->
+<!-- BEGIN: Footer Actions -->
+<footer class="p-8 border-t border-slate-100 flex justify-end gap-3 bg-white">
+<button class="px-8 py-2.5 border border-blue-500 text-blue-500 font-semibold rounded-custom hover:bg-blue-50 transition-colors" style="">
+        Cancel
+      </button>
+<button class="px-8 py-2.5 bg-blue-500 text-white font-semibold rounded-custom hover:bg-blue-600 transition-shadow shadow-lg shadow-blue-500/20" style="">
+        确认</button>
+</footer>
+<!-- END: Footer Actions -->
+</main>
+<!-- END: LogicEditorModal -->
+</body></html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-low": "#f1f4f6",
+              "tertiary": "#5f2200",
+              "on-error-container": "#93000a",
+              "inverse-surface": "#2d3133",
+              "surface": "#f7fafc",
+              "outline": "#737783",
+              "background": "#f7fafc",
+              "surface-dim": "#d7dadc",
+              "secondary-fixed": "#c9e7f7",
+              "tertiary-fixed": "#ffdbcc",
+              "tertiary-container": "#833301",
+              "secondary-fixed-dim": "#adcbda",
+              "on-surface-variant": "#424751",
+              "on-surface": "#181c1e",
+              "on-primary-fixed-variant": "#00458f",
+              "surface-variant": "#e0e3e5",
+              "on-tertiary-fixed-variant": "#7b2f00",
+              "on-tertiary-fixed": "#351000",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-container": "#4a6774",
+              "on-secondary-fixed-variant": "#2e4b57",
+              "secondary-container": "#c6e4f4",
+              "outline-variant": "#c2c6d3",
+              "on-primary-container": "#9bbdff",
+              "on-background": "#181c1e",
+              "inverse-primary": "#abc7ff",
+              "primary-container": "#004a99",
+              "on-primary-fixed": "#001b3f",
+              "inverse-on-surface": "#eef1f3",
+              "on-tertiary": "#ffffff",
+              "surface-container-highest": "#e0e3e5",
+              "error-container": "#ffdad6",
+              "secondary": "#466270",
+              "on-tertiary-container": "#ffa77e",
+              "on-secondary-fixed": "#001f2a",
+              "on-secondary": "#ffffff",
+              "surface-container-high": "#e5e9eb",
+              "surface-container": "#ebeef0",
+              "surface-bright": "#f7fafc",
+              "error": "#ba1a1a",
+              "primary-fixed-dim": "#abc7ff",
+              "primary": "#00346f",
+              "on-primary": "#ffffff",
+              "tertiary-fixed-dim": "#ffb694",
+              "surface-tint": "#255dad",
+              "primary-fixed": "#d7e2ff",
+              "on-error": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "mono": ["JetBrains Mono"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(247, 250, 252, 0.6);
+            backdrop-filter: blur(20px);
+        }
+        /* Optimized Tooltip Styles */
+        .tooltip-trigger:hover .tooltip-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        /* Anchor logic: using fixed positioning to escape overflow:hidden of parent containers */
+        .tooltip-content {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(8px) scale(0.95);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            width: max-content;
+            max-width: 420px;
+            /* Using top/left with translate to stay outside modal bounds if needed */
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar (Shared Component) -->
+<header class="bg-slate-50/60 dark:bg-slate-900/60 backdrop-blur-md flex justify-between items-center px-8 h-16 w-full docked full-width top-0 sticky z-50">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tight text-blue-900 dark:text-blue-100">Analytical Architect</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-800 dark:hover:text-blue-300 transition-colors" href="#">Workspace</a>
+<a class="text-blue-700 dark:text-blue-400 border-b-2 border-blue-700 dark:border-blue-400 pb-1" href="#">Queries</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-800 dark:hover:text-blue-300 transition-colors" href="#">Data Models</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-800 dark:hover:text-blue-300 transition-colors" href="#">Library</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-slate-500 cursor-pointer" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-slate-500 cursor-pointer" data-icon="settings">settings</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden">
+<img alt="User profile" data-alt="professional headshot of a data scientist with minimalist background soft lighting neutral tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrlEEfZZvNevUxsLuNl13C3JQWk10Ob2NzeR5p_kY1gqF3bAkgbeutOBxF3iot7leVgJvyRxdMRlAt32wLhxpCKYcpdri6TwDfLFgwK2sg-KlP8-tGTJp50aVqY2Hrs5zwr8TqMi9YKJTZGWzrabGoCBdoniEj1abhh9TjKCFK8PJxZ0TiABMRbOFMMOCGSCsQEcft6Jjr9GsS1IAArRjKC2UQS9wMyu3MQMUL-wpiD7r_WqNMvhHIbqV5JVdJPh3oGyfJpLN7UXHP"/>
+</div>
+</div>
+</header>
+<main class="flex min-h-[calc(100vh-64px)]">
+<!-- SideNavBar (Shared Component) -->
+<aside class="bg-slate-100 dark:bg-slate-950 h-[calc(100vh-64px)] w-64 border-r border-slate-200/50 dark:border-slate-800/50 flex flex-col py-6 px-4 gap-4 sticky top-16">
+<div class="mb-4">
+<h2 class="text-lg font-semibold text-blue-900 dark:text-blue-100">SQL Editor</h2>
+<p class="text-xs text-slate-500">Drafting Query v2.4</p>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="table_chart">table_chart</span>
+<span class="label-md font-medium">Tables</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 bg-white dark:bg-slate-900 text-blue-900 dark:text-blue-400 font-bold rounded-lg shadow-sm transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+<span class="label-md">Joins</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="filter_alt">filter_alt</span>
+<span class="label-md font-medium">Filters</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="view_column">view_column</span>
+<span class="label-md font-medium">Columns</span>
+</div>
+</div>
+<button class="mt-4 w-full py-2 px-4 bg-primary text-white font-semibold rounded-lg hover:opacity-90 transition-opacity">Run Query</button>
+<div class="mt-auto flex flex-col gap-1 pt-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 px-3 py-2 text-slate-500 hover:text-blue-900 transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="text-sm">Docs</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-slate-500 hover:text-blue-900 transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+<span class="text-sm">Support</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 p-12 flex flex-col items-center justify-center bg-slate-50/50">
+<!-- Formula Configurator -->
+<section class="w-full max-w-4xl mx-auto">
+<div class="bg-white border border-slate-200 rounded-xl shadow-xl overflow-visible">
+<div class="p-8">
+<div class="flex items-center justify-between mb-6 relative">
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<h3 class="text-xl font-headline font-bold text-slate-900 pointer-events-auto">公式编辑器</h3>
+</div>
+<div class="flex-1"></div>
+<span class="text-xs font-mono text-slate-400">Syntax: <span class="text-green-600">OK</span></span>
+</div>
+<!-- Interactive Formula Display Area -->
+<div class="w-full min-h-[16rem] bg-slate-50 border border-slate-100 rounded-lg p-6 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary outline-none flex flex-wrap items-center gap-x-2 gap-y-3 content-start transition-all cursor-text overflow-visible" tabindex="0">
+<span class="text-2xl font-mono text-slate-400 select-none">(</span>
+<button class="inline-flex items-center px-3 py-1 bg-blue-50 border border-blue-100 text-blue-700 rounded-lg text-lg font-semibold hover:bg-blue-100 transition-colors group">
+<span class="material-symbols-outlined text-blue-400 mr-1.5 text-lg group-hover:text-blue-600" data-icon="database">database</span>
+                            revenue
+                        </button>
+<span class="text-2xl font-mono text-slate-600 select-none">-</span>
+<button class="inline-flex items-center px-3 py-1 bg-blue-50 border border-blue-100 text-blue-700 rounded-lg text-lg font-semibold hover:bg-blue-100 transition-colors group">
+<span class="material-symbols-outlined text-blue-400 mr-1.5 text-lg group-hover:text-blue-600" data-icon="database">database</span>
+                            cost
+                        </button>
+<span class="text-2xl font-mono text-slate-400 select-none">)</span>
+<span class="text-2xl font-mono text-slate-600 select-none">/</span>
+<button class="inline-flex items-center px-3 py-1 bg-blue-50 border border-blue-100 text-blue-700 rounded-lg text-lg font-semibold hover:bg-blue-100 transition-colors group">
+<span class="material-symbols-outlined text-blue-400 mr-1.5 text-lg group-hover:text-blue-600" data-icon="database">database</span>
+                            revenue
+                        </button>
+<span class="text-2xl font-mono text-slate-600 select-none">*</span>
+<!-- IF Logic Capsule with Popover Tooltip -->
+<div class="relative tooltip-trigger inline-flex items-stretch rounded-lg border border-amber-200 overflow-visible shadow-sm h-8">
+<div class="bg-amber-500 px-2.5 flex items-center gap-1 border-r border-amber-600">
+<span class="material-symbols-outlined text-white text-base" data-icon="account_tree">account_tree</span>
+<span class="text-white font-bold font-mono text-xs">IF</span>
+</div>
+<div class="bg-amber-50 flex items-center gap-1.5 hover:bg-amber-100 cursor-pointer transition-colors group px-2">
+<span class="text-amber-800 font-semibold text-xs">Complex_Validation_Branch</span>
+<span class="material-symbols-outlined text-amber-400 text-xs" data-icon="expand_more">expand_more</span>
+</div>
+<!-- Tooltip Popover Style -->
+<div class="tooltip-content absolute bottom-full left-1/2 -translate-x-1/2 mb-4 z-[70]">
+<div class="bg-slate-900 text-white rounded-xl p-5 shadow-2xl border border-slate-700/50 backdrop-blur-sm">
+<div class="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+<div class="text-[10px] uppercase tracking-widest text-amber-400 font-bold">SQL Implementation</div>
+<span class="material-symbols-outlined text-xs text-slate-500" data-icon="code">code</span>
+</div>
+<pre class="font-mono text-[13px] leading-relaxed whitespace-pre text-slate-200">CASE 
+  WHEN user_segment = 'VIP' 
+  AND last_login &gt; '2024-01-01'
+  THEN revenue * 1.15
+  ELSE revenue * 1.05
+END</pre>
+<div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 border-r border-b border-slate-700/50 rotate-45"></div>
+</div>
+</div>
+</div>
+<span class="text-2xl font-mono text-slate-600 select-none">+</span>
+<!-- ROUND Function Capsule with Popover Tooltip -->
+<div class="relative tooltip-trigger inline-flex items-stretch rounded-lg border border-emerald-200 overflow-visible shadow-sm h-8">
+<div class="bg-emerald-500 px-2.5 flex items-center gap-1 border-r border-emerald-600">
+<span class="material-symbols-outlined text-white text-base" data-icon="functions">functions</span>
+<span class="text-white font-bold font-mono text-xs">ROUND</span>
+</div>
+<div class="bg-emerald-50 px-2.5 flex items-center gap-1.5 hover:bg-emerald-100 cursor-pointer transition-colors group">
+<span class="text-emerald-800 font-semibold text-xs">APP_User_Balance</span>
+</div>
+<!-- Tooltip Popover Style -->
+<div class="tooltip-content absolute bottom-full left-1/2 -translate-x-1/2 mb-4 z-[70]">
+<div class="bg-slate-900 text-white rounded-xl p-5 shadow-2xl border border-slate-700/50 backdrop-blur-sm">
+<div class="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+<div class="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">SQL Implementation</div>
+<span class="material-symbols-outlined text-xs text-slate-500" data-icon="terminal">terminal</span>
+</div>
+<pre class="font-mono text-[13px] leading-relaxed whitespace-pre text-slate-200">ROUND(
+  COALESCE(user_stats.current_balance, 0.00), 
+  2
+)</pre>
+<div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 border-r border-b border-slate-700/50 rotate-45"></div>
+</div>
+</div>
+</div>
+<span class="text-2xl font-mono text-slate-600 select-none">+</span>
+<span class="text-2xl font-mono text-slate-400 select-none">(</span>
+<span class="w-0.5 h-8 bg-primary animate-pulse ml-0.5"></span>
+</div>
+<div class="mt-8 grid grid-cols-4 gap-2">
+<div class="col-span-4 flex gap-2 mb-4 border-b border-slate-100 pb-4">
+<button class="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200 transition-all border border-slate-200/50">插入字段</button>
+<button class="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200 transition-all border border-slate-200/50">插入函数</button>
+<button class="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200 transition-all border border-slate-200/50">插入逻辑</button>
+</div>
+<!-- Calculator style buttons -->
+<button class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xl font-bold text-slate-600 hover:bg-primary hover:text-white hover:border-primary transition-all">+</button>
+<button class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xl font-bold text-slate-600 hover:bg-primary hover:text-white hover:border-primary transition-all">-</button>
+<button class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xl font-bold text-slate-600 hover:bg-primary hover:text-white hover:border-primary transition-all">*</button>
+<button class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xl font-bold text-slate-600 hover:bg-primary hover:text-white hover:border-primary transition-all">/</button>
+<button class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xl font-bold text-slate-600 hover:bg-primary hover:text-white hover:border-primary transition-all">(</button>
+<button class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xl font-bold text-slate-600 hover:bg-primary hover:text-white hover:border-primary transition-all">)</button>
+<button class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xl font-bold text-slate-600 hover:bg-primary hover:text-white hover:border-primary transition-all">%</button>
+<button class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xl font-bold text-slate-600 hover:bg-primary hover:text-white hover:border-primary transition-all">.</button>
+</div>
+<div class="mt-8 flex justify-end items-center gap-6">
+<button class="text-slate-400 hover:text-slate-600 font-semibold transition-colors">取消</button>
+<button class="px-10 py-2.5 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-primary/90 transition-all">确认</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer Meta -->
+<footer class="h-12 bg-surface flex items-center px-8 border-t border-surface-container-low text-[10px] text-outline uppercase tracking-[0.2em]">
+    Analytical Architect Framework © 2024 PRECISION TRANSPARENCY SYSTEM
+</footer>
+<script>
+    // Logic to handle "dynamic" popover positioning (simulated since no real JS engine is requested, but classes support it)
+    document.querySelectorAll('.tooltip-trigger').forEach(trigger => {
+        trigger.addEventListener('mouseenter', () => {
+            const content = trigger.querySelector('.tooltip-content');
+            const rect = trigger.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            
+            // Check if top space is sufficient
+            if (rect.top < 250) { 
+                // Too close to top, switch to bottom popover
+                content.classList.remove('bottom-full', 'mb-4');
+                content.classList.add('top-full', 'mt-4');
+                // Flip the arrow
+                const arrow = content.querySelector('div:last-child');
+                arrow.classList.remove('bottom-[-6px]', 'border-r', 'border-b');
+                arrow.classList.add('top-[-6px]', 'border-l', 'border-t');
+            } else {
+                content.classList.add('bottom-full', 'mb-4');
+                content.classList.remove('top-full', 'mt-4');
+            }
+        });
+    });
+</script>
+</body></html>
