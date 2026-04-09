@@ -76,17 +76,23 @@
       box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
     }
 
-    /* Glassmorphism Tooltip Styles */
+    /* 与全站统一的黑色 hover 气泡 */
     .glass-tooltip {
       visibility: hidden;
       opacity: 0;
       transition: opacity 0.3s ease, visibility 0.3s ease;
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+      background: #0a0a0a;
+      color: rgba(245, 245, 245, 0.94);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
+      border-radius: 8px;
     }
+    .glass-tooltip .text-slate-500,
+    .glass-tooltip .text-slate-600,
+    .glass-tooltip .text-slate-700 { color: rgba(203, 213, 225, 0.88) !important; }
+    .glass-tooltip code { color: rgba(226, 232, 240, 0.96) !important; }
 
     .capsule-container:hover .glass-tooltip {
       visibility: visible;
@@ -168,7 +174,7 @@
 </div>
 <!-- SQL Tooltip -->
 <div class="glass-tooltip absolute z-50 left-0 top-full mt-2 p-4 rounded-lg w-full max-w-lg pointer-events-none">
-<div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2" style="">Compiled SQL Logic</div>
+<div class="vdb-tip-title">Compiled SQL Logic</div>
 <code class="block text-xs font-mono text-slate-700 whitespace-pre leading-relaxed">SELECT *
 FROM transactions
 WHERE revenue &gt; 5000 
@@ -194,7 +200,7 @@ WHERE revenue &gt; 5000
 </div>
 <!-- SQL Tooltip -->
 <div class="glass-tooltip absolute z-50 left-0 top-full mt-2 p-4 rounded-lg w-full max-w-lg pointer-events-none">
-<div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2" style="">Computed Column Value</div>
+<div class="vdb-tip-title">Computed Column Value</div>
 <code class="block text-xs font-mono text-slate-700 whitespace-pre leading-relaxed">CASE 
   WHEN t.type IS NOT NULL THEN CAST(t.type AS VARCHAR)
   ELSE 'Uncategorized'

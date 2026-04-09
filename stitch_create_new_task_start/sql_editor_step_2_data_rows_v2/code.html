@@ -176,14 +176,16 @@
   </style>
 <style>
     .notification-dot {
-      width: 6px;
-      height: 6px;
-      background-color: #ef4444;
-      border-radius: 9999px;
       position: absolute;
-      top: -2px;
+      width: 8px;
+      height: 8px;
+      box-sizing: border-box;
+      background-color: #ef4444;
+      border: 2px solid #ffffff;
+      border-radius: 9999px;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.72);
+      top: -3px;
       right: -4px;
-      box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
     }
     .menu-tooltip {
       visibility: hidden;
@@ -191,7 +193,7 @@
       left: 105%;
       top: 50%;
       transform: translateY(-50%);
-      background-color: #1e293b;
+      background-color: #0a0a0a;
       color: white;
       padding: 4px 8px;
       border-radius: 4px;
@@ -233,7 +235,7 @@
       left: 140%;
       top: 50%;
       transform: translateY(-50%);
-      background-color: #1e293b;
+      background-color: #0a0a0a;
       color: #ffffff;
       padding: 8px 12px;
       border-radius: 6px;
@@ -255,7 +257,7 @@
       transform: translateY(-50%);
       border-width: 6px;
       border-style: solid;
-      border-color: transparent #1e293b transparent transparent;
+      border-color: transparent #0a0a0a transparent transparent;
     }
     .visibility-tooltip-container:hover .visibility-tooltip {
       visibility: visible;
@@ -272,7 +274,7 @@
       bottom: 120%;
       left: 50%;
       transform: translateX(-50%);
-      background-color: #1e293b;
+      background-color: #0a0a0a;
       color: #ffffff;
       padding: 10px 14px;
       border-radius: 8px;
@@ -294,7 +296,7 @@
       transform: translateX(-50%);
       border-width: 6px;
       border-style: solid;
-      border-color: #1e293b transparent transparent transparent;
+      border-color: #0a0a0a transparent transparent transparent;
     }
     .filter-tooltip-container:hover .filter-tooltip {
       visibility: visible;
@@ -313,7 +315,7 @@
       left: 105%;
       top: 50%;
       transform: translateY(-50%);
-      background-color: #1e293b;
+      background-color: #0a0a0a;
       color: white;
       padding: 4px 8px;
       border-radius: 4px;
@@ -333,7 +335,7 @@
       transform: translateY(-50%);
       border-width: 4px;
       border-style: solid;
-      border-color: transparent #1e293b transparent transparent;
+      border-color: transparent #0a0a0a transparent transparent;
     }
     .dropdown-tooltip-container:hover .dropdown-tooltip {
       visibility: visible;
@@ -623,7 +625,7 @@
 <span class="font-bold font-headline" style="">
 <div class="relative inline-block">
 <span class="" style="">amount_usd</span>
-<span class="absolute -top-1 -right-2 w-2.5 h-2.5 bg-[#ff4d4f] border-2 border-white rounded-full shadow-sm"></span>
+<span class="notification-dot" style="top: -4px; right: -8px;" aria-hidden="true"></span>
 </div>
 </span>
 </div>
@@ -794,7 +796,7 @@
 <span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity" style="">drag_indicator</span>
 <div class="relative inline-block">
 <span class="font-bold font-headline" style="">customer_email2</span>
-<span class="absolute -top-1 -right-2 w-2.5 h-2.5 bg-[#ff4d4f] border-2 border-white rounded-full shadow-sm" style="">2</span>
+<span class="notification-dot" style="top: -4px; right: -8px;" aria-hidden="true"></span>
 </div>
 </div>
 </div>

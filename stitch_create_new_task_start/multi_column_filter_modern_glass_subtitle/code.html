@@ -62,13 +62,18 @@
     .icon-btn:hover {
       color: #004a99;
     }
-    /* Glassmorphism effect */
+    /* 与全站统一的黑色 hover 气泡 */
     .glass-tooltip {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(12px) saturate(180%);
-      -webkit-backdrop-filter: blur(12px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: #0a0a0a;
+      color: rgba(245, 245, 245, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
+      border-radius: 8px;
     }
+    .glass-tooltip .text-slate-500,
+    .glass-tooltip .text-slate-600,
+    .glass-tooltip .text-slate-700 { color: rgba(203, 213, 225, 0.88) !important; }
+    .glass-tooltip code { color: rgba(226, 232, 240, 0.96) !important; }
   </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/></head>
 <body class="bg-gray-100 font-sans antialiased flex items-center justify-center min-h-screen">
@@ -329,14 +334,14 @@
 <!-- Glassmorphism Formula Tooltip -->
 <div class="glass-tooltip absolute left-1/2 -translate-x-1/2 bottom-full mb-3 px-4 py-3 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] opacity-0 invisible group-hover/formula-capsule:opacity-100 group-hover/formula-capsule:visible transition-all duration-300 z-[100] min-w-[320px] pointer-events-none backdrop-blur-md">
 <div class="flex flex-col gap-1">
-<div class="text-[10px] font-bold text-indigo-600/70 uppercase tracking-wider mb-1" style="">Active Formula</div>
+<div class="vdb-tip-title">Active Formula</div>
 <div class="font-mono text-xs text-indigo-900 leading-relaxed break-all" style="">
             (revenue - cost) / revenue * ROUND(APP_User_Balance, 2) + <br/>
             IF(region_id == 101, tax_rate_standard, tax_rate_intl)
         </div>
 </div>
 <!-- Tooltip Arrow -->
-<div class="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-white/50"></div>
+<div class="vdb-tip-caret absolute top-full left-1/2 -translate-x-1/2"></div>
 </div>
 </div>
 <div class="flex gap-2 shrink-0">

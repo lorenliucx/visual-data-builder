@@ -44,7 +44,7 @@
   </style>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
-<title>SQL Architect Pro - Create New Task</title>
+<title>创建合并Table · Visual Data Builder</title>
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect">
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
@@ -174,14 +174,16 @@
   </style>
 <style>
     .notification-dot {
-      width: 6px;
-      height: 6px;
-      background-color: #ef4444;
-      border-radius: 9999px;
       position: absolute;
-      top: -2px;
+      width: 8px;
+      height: 8px;
+      box-sizing: border-box;
+      background-color: #ef4444;
+      border: 2px solid #ffffff;
+      border-radius: 9999px;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.72);
+      top: -3px;
       right: -4px;
-      box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
     }
     .menu-tooltip {
       visibility: hidden;
@@ -189,7 +191,7 @@
       left: 105%;
       top: 50%;
       transform: translateY(-50%);
-      background-color: #1e293b;
+      background-color: #0a0a0a;
       color: white;
       padding: 4px 8px;
       border-radius: 4px;
@@ -202,6 +204,16 @@
     .group:hover .menu-tooltip {
       visibility: visible;
       opacity: 1;
+    }
+    /* 悬停「配置匹配条件」时，填补按钮与上方气泡之间的空隙，避免鼠标移动时气泡消失 */
+    #joinConfigBtnWrap::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 100%;
+      height: 10px;
+      z-index: 199;
     }
   </style>
 <style>
@@ -231,7 +243,7 @@
       left: 140%;
       top: 50%;
       transform: translateY(-50%);
-      background-color: #1e293b;
+      background-color: #0a0a0a;
       color: #ffffff;
       padding: 8px 12px;
       border-radius: 6px;
@@ -253,7 +265,7 @@
       transform: translateY(-50%);
       border-width: 6px;
       border-style: solid;
-      border-color: transparent #1e293b transparent transparent;
+      border-color: transparent #0a0a0a transparent transparent;
     }
     .visibility-tooltip-container:hover .visibility-tooltip {
       visibility: visible;
@@ -270,7 +282,7 @@
       bottom: 120%;
       left: 50%;
       transform: translateX(-50%);
-      background-color: #1e293b;
+      background-color: #0a0a0a;
       color: #ffffff;
       padding: 10px 14px;
       border-radius: 8px;
@@ -292,7 +304,7 @@
       transform: translateX(-50%);
       border-width: 6px;
       border-style: solid;
-      border-color: #1e293b transparent transparent transparent;
+      border-color: #0a0a0a transparent transparent transparent;
     }
     .filter-tooltip-container:hover .filter-tooltip {
       visibility: visible;
@@ -310,7 +322,7 @@
       left: 105%;
       top: 50%;
       transform: translateY(-50%);
-      background-color: #1e293b;
+      background-color: #0a0a0a;
       color: white;
       padding: 4px 8px;
       border-radius: 4px;
@@ -330,7 +342,7 @@
       transform: translateY(-50%);
       border-width: 4px;
       border-style: solid;
-      border-color: transparent #1e293b transparent transparent;
+      border-color: transparent #0a0a0a transparent transparent;
     }
     .dropdown-tooltip-container:hover .dropdown-tooltip {
       visibility: visible;
@@ -610,7 +622,7 @@
 </div>
 <div class="text-center">
 <span class="text-xs font-bold text-on-surface block" style="">Join (Inner)</span>
-<span class="text-[10px] text-on-surface-variant font-medium" style="">只保留满足匹配条件的行</span>
+<span class="text-[10px] text-on-surface-variant font-medium" style="">只保留满足匹配条件的行，并返回两表所有列</span>
 </div>
 </div>
 <!-- Left Join -->
@@ -628,7 +640,7 @@
 </div>
 <div class="text-center">
 <span class="text-xs font-bold text-primary block" style="">Left Join</span>
-<span class="text-[10px] text-on-surface-variant font-medium" style="">保留左表的所有行 + 匹配右表</span>
+<span class="text-[10px] text-on-surface-variant font-medium" style="">保留左表的所有行 + 匹配上的右表的行（否则补 NULL），返回两表所有列</span>
 </div>
 </div>
 <!-- Right Join -->
@@ -646,7 +658,7 @@
 </div>
 <div class="text-center">
 <span class="text-xs font-bold text-on-surface block" style="">Right Join</span>
-<span class="text-[10px] text-on-surface-variant font-medium" style="">保留右表的所有行 + 匹配左表</span>
+<span class="text-[10px] text-on-surface-variant font-medium" style="">保留右表的所有行+匹配上的左表的行(否则补NULL)，返回两表所有列</span>
 </div>
 </div>
 <!-- Union ALL -->
@@ -661,17 +673,26 @@
 </div>
 <div class="text-center">
 <span class="text-xs font-bold text-on-surface block" style="">Union ALL</span>
-<span class="text-[10px] text-on-surface-variant font-medium" style="">合并所有行</span>
+<span class="text-[10px] text-on-surface-variant font-medium" style="">列数必须相同，不考虑列名是否相同，合并所有行，不去重</span>
 </div>
 </div>
 </div>
 <!-- Merge Keys Area -->
 <div class="mt-4 pt-4 border-t border-outline-variant/10" id="joinConfigArea">
-<button class="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg text-xs font-bold shadow-sm hover:bg-primary/90 transition-all active:scale-95" id="joinConfigBtn">
+<div class="relative inline-flex group" id="joinConfigBtnWrap">
+<button class="relative flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg text-xs font-bold shadow-sm hover:bg-primary/90 transition-all active:scale-95 overflow-visible" id="joinConfigBtn" type="button">
 <span class="material-symbols-outlined text-sm" style="">join_inner</span>
 <span style="">配置匹配条件</span>
 <span class="material-symbols-outlined text-sm" style="">arrow_forward</span>
+<span class="notification-dot" style="top: -4px; right: -4px;" aria-hidden="true"></span>
 </button>
+<div class="join-condition-sql-popover pointer-events-none absolute bottom-full left-0 z-[200] mb-0 max-h-[min(50vh,20rem)] w-[min(92vw,28rem)] overflow-auto rounded-lg border border-slate-600/90 bg-[#0a0a0a] px-3 py-2.5 text-left opacity-0 shadow-2xl transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100" role="tooltip">
+<div class="vdb-tip-title">已配置的匹配条件</div>
+<pre class="m-0 whitespace-pre-wrap break-words font-mono text-[10px] leading-relaxed text-emerald-100/95">production_raw_transactions.customer_email = billing_q4.email
+AND production_raw_transactions.billing_period = billing_q4.period
+AND billing_q4.deleted_at IS NULL</pre>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -759,7 +780,7 @@
 <span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity" style="">drag_indicator</span>
 <div class="relative inline-block">
 <span class="font-bold font-headline" style="">customer_email</span>
-<span class="absolute -top-1 -right-2 w-2.5 h-2.5 bg-[#ff4d4f] border-2 border-white rounded-full shadow-sm"></span>
+<span class="notification-dot" style="top: -4px; right: -8px;" aria-hidden="true"></span>
 </div>
 </div>
 </div>
