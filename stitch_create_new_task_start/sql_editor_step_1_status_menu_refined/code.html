@@ -20,7 +20,7 @@
       display: none;
       z-index: 100;
     }
-    .group:hover > .source-table-dropdown {
+    .source-table-picker.source-table-open > .source-table-dropdown {
       display: block;
     }
     .category-item:hover > .table-list {
@@ -117,7 +117,11 @@
     .table-container {
       display: block;
       max-height: 800px;
-      overflow: visible !important;
+      overflow-x: auto;
+      overflow-y: auto;
+      scrollbar-gutter: stable;
+      box-sizing: border-box;
+      border-radius: 0.75rem;
     }
     .table-container::-webkit-scrollbar {
       width: 6px;
@@ -344,6 +348,64 @@
       opacity: 1;
     }
   </style>
+<style>
+    /* Step 2 表头：隐藏列说明（黑底气泡） */
+    .col-hide-eye-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      pointer-events: none;
+    }
+    th.group:hover .col-hide-eye-container {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .col-hide-eye-icon {
+      font-size: 18px;
+      line-height: 1;
+      cursor: default;
+    }
+    .col-hide-tooltip {
+      visibility: hidden;
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #0a0a0a;
+      color: rgba(245, 245, 245, 0.94);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      line-height: 1.5;
+      width: min(22rem, 92vw);
+      max-width: 22rem;
+      white-space: normal;
+      text-align: left;
+      z-index: 200;
+      opacity: 0;
+      transition: opacity 0.15s ease, visibility 0.15s ease;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      pointer-events: none;
+    }
+    .col-hide-tooltip::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-bottom-color: #0a0a0a;
+    }
+    .col-hide-eye-container:hover .col-hide-tooltip,
+    .col-hide-eye-container:focus-within .col-hide-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
 <!-- TopNavBar (Shared Component) -->
 <header class="bg-slate-50 dark:bg-slate-900 flex justify-between items-center px-6 py-3 w-full border-b border-slate-200/50 dark:border-slate-800/50 sticky top-0 z-50">
 <div class="flex items-center gap-8">
@@ -387,7 +449,7 @@
 </div>
 <div class="w-8 h-8 flex items-center justify-center rounded-lg text-primary cursor-pointer hover:bg-primary/10 transition-all group relative">
 <span class="material-symbols-outlined text-lg" style="font-variation-settings: &quot;FILL&quot; 1; font-weight: 700;">add</span>
-<div class="menu-tooltip" style="">New Table</div>
+<div class="menu-tooltip" style="">Add Table</div>
 </div>
 </div>
 <div class="w-8 h-px bg-slate-200 dark:bg-slate-800 mb-6"></div>
@@ -471,9 +533,10 @@
 <div class="flex items-center justify-center p-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg hover:bg-white dark:hover:bg-slate-900 cursor-pointer transition-all group">
 <div class="flex items-center gap-2 text-slate-400 group-hover:text-primary">
 <span class="material-symbols-outlined text-sm" style="">add_circle</span>
-<span class="text-xs font-semibold" style="">New Table</span>
+<span class="text-xs font-semibold" style="">Add Table</span>
 </div>
 </div>
+<p class="mt-1.5 px-1 text-[9px] leading-snug text-slate-400 dark:text-slate-500 text-center">你创建的最后一个表格就是最终整个Template生成的最终表格</p>
 </div>
 <div class="mt-auto pt-8">
 <div class="bg-primary/5 dark:bg-primary/10 rounded-lg p-4 border border-primary/10">
@@ -502,9 +565,9 @@
 <input class="bg-transparent border-none p-0 focus:ring-0 w-full text-lg font-headline font-semibold text-on-surface" placeholder="v_user_billing_balance_transactions_summarized_q4" spellcheck="false" type="text" value="v_user_billing_summarized_q4">
 </div>
 </div>
-<div class="flex flex-col gap-2 w-72 group relative">
+<div class="source-table-picker flex flex-col gap-2 w-72 group relative">
 <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant font-label" style="">Source Table</label>
-<div class="flex items-center justify-between gap-3 bg-surface-container-lowest rounded shadow-sm border border-outline-variant/10 px-4 py-3 cursor-pointer hover:border-primary/30 transition-all">
+<div class="source-table-trigger flex items-center justify-between gap-3 bg-surface-container-lowest rounded shadow-sm border border-outline-variant/10 px-4 py-3 cursor-pointer hover:border-primary/30 transition-all">
 <div class="flex items-center gap-2 overflow-hidden">
 <div class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></div>
 <span class="text-sm font-semibold text-on-surface truncate font-headline" style="">production_raw_transactions</span>
@@ -572,7 +635,7 @@
 <div class="notification-dot"></div>
 </button>
 <div class="filter-tooltip" style="">
-                      在你表格过滤配置的基础上，符合如下条件的行也会被保留。你当前的配置如下:<br>
+                      在你表格过滤配置的基础上，符合如下条件的行也会被保留。<br>你当前的配置如下:<br>
 <span class="font-mono mt-2 block bg-slate-800 text-slate-300 p-1.5 rounded text-[10px] leading-tight opacity-90" style="">amount_usd &gt; 1000 OR (status = 'SUCCESS' AND customer_email LIKE '%@tech-inc.co')</span>
 </div>
 </div>
@@ -771,9 +834,13 @@
 </th>
 <th class="px-4 py-3 text-left border-r border-outline-variant/10 group min-w-[160px] relative hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
 <div class="flex items-center justify-between group/header">
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 min-w-0">
 <span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover/header:opacity-100 transition-opacity" style="">drag_indicator</span>
 <span class="font-bold font-headline" style="">transaction_id</span>
+<div class="col-hide-eye-container">
+<span class="material-symbols-outlined col-hide-eye-icon text-slate-400 hover:text-primary" aria-hidden="true">visibility</span>
+<div class="col-hide-tooltip" role="tooltip">隐藏此列，本Table输出列中将不会出现此列，在本列配置的Rename/Map Data也将失效，不影响其他列对Source Table中同名列的引用、计算</div>
+</div>
 </div>
 <div class="relative">
 <span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 opacity-0 group-hover/header:opacity-100 transition-opacity" style="">expand_more</span>
@@ -791,6 +858,10 @@
 <span class="notification-dot" style="top: -4px; right: -8px;" aria-hidden="true"></span>
 </div>
 </div>
+<div class="col-hide-eye-container">
+<span class="material-symbols-outlined col-hide-eye-icon text-slate-400 hover:text-primary" aria-hidden="true">visibility</span>
+<div class="col-hide-tooltip" role="tooltip">隐藏此列，本Table输出列中将不会出现此列，在本列配置的Rename/Map Data也将失效，不影响其他列对Source Table中同名列的引用、计算</div>
+</div>
 </div>
 <span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 text-on-surface opacity-0 group-hover:opacity-100 transition-opacity" style="">expand_more</span>
 </div>
@@ -807,13 +878,17 @@
 </th>
 <th class="px-4 py-3 text-left border-r border-outline-variant/10 group min-w-[160px] relative hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
 <div class="flex items-center justify-between group/header">
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 min-w-0">
 <span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover/header:opacity-100 transition-opacity" style="">drag_indicator</span>
 <span class="font-bold font-headline" style="">
 <div class="relative inline-block">
 <span class="" style="">amount_usd</span>
 </div>
 </span>
+<div class="col-hide-eye-container">
+<span class="material-symbols-outlined col-hide-eye-icon text-slate-400 hover:text-primary" aria-hidden="true">visibility</span>
+<div class="col-hide-tooltip" role="tooltip">隐藏此列，本Table输出列中将不会出现此列，在本列配置的Rename/Map Data也将失效，不影响其他列对Source Table中同名列的引用、计算</div>
+</div>
 </div>
 <div class="relative">
 <span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 opacity-0 group-hover/header:opacity-100 transition-opacity" style="">expand_more</span>
@@ -830,9 +905,13 @@
 </th>
 <th class="px-4 py-3 text-left border-r border-outline-variant/10 group min-w-[160px] relative hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
 <div class="flex items-center justify-between group/header">
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 min-w-0">
 <span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover/header:opacity-100 transition-opacity" style="">drag_indicator</span>
 <span class="font-bold font-headline" style="">currency</span>
+<div class="col-hide-eye-container">
+<span class="material-symbols-outlined col-hide-eye-icon text-slate-400 hover:text-primary" aria-hidden="true">visibility</span>
+<div class="col-hide-tooltip" role="tooltip">隐藏此列，本Table输出列中将不会出现此列，在本列配置的Rename/Map Data也将失效，不影响其他列对Source Table中同名列的引用、计算</div>
+</div>
 </div>
 <div class="relative">
 <span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 opacity-0 group-hover/header:opacity-100 transition-opacity" style="">expand_more</span>
@@ -849,9 +928,13 @@
 </th>
 <th class="px-4 py-3 text-left border-r border-outline-variant/10 group min-w-[160px] relative hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
 <div class="flex items-center justify-between group/header">
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 min-w-0">
 <span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover/header:opacity-100 transition-opacity" style="">drag_indicator</span>
 <span class="font-bold font-headline" style="">status</span>
+<div class="col-hide-eye-container">
+<span class="material-symbols-outlined col-hide-eye-icon text-slate-400 hover:text-primary" aria-hidden="true">visibility</span>
+<div class="col-hide-tooltip" role="tooltip">隐藏此列，本Table输出列中将不会出现此列，在本列配置的Rename/Map Data也将失效，不影响其他列对Source Table中同名列的引用、计算</div>
+</div>
 </div>
 <div class="relative">
 <span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 opacity-0 group-hover/header:opacity-100 transition-opacity" style="">expand_more</span>
@@ -939,4 +1022,27 @@
     t.amount <span style="color:#569cd6">DESC</span>;</code></pre>
 </div>
 </div>
-</div></div></main></div></body></html>
+</div></div></main></div>
+<script>
+(function () {
+  document.querySelectorAll('.source-table-picker').forEach(function (picker) {
+    var trigger = picker.querySelector('.source-table-trigger');
+    if (!trigger) return;
+    trigger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var wasOpen = picker.classList.contains('source-table-open');
+      document.querySelectorAll('.source-table-picker').forEach(function (el) {
+        el.classList.remove('source-table-open');
+      });
+      if (!wasOpen) picker.classList.add('source-table-open');
+    });
+  });
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('.source-table-picker')) return;
+    document.querySelectorAll('.source-table-picker.source-table-open').forEach(function (el) {
+      el.classList.remove('source-table-open');
+    });
+  });
+})();
+</script>
+</body></html>

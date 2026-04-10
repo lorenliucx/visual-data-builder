@@ -22,7 +22,7 @@
       display: none;
       z-index: 100;
     }
-    .group:hover > .source-table-dropdown {
+    .source-table-picker.source-table-open > .source-table-dropdown {
       display: block;
     }
     .category-item:hover > .table-list {
@@ -35,6 +35,59 @@
       top: 0;
       min-width: 200px;
       margin-left: 2px;
+    }
+
+    /* M1：Source Table 区域悬停 → 右侧数据字典抽屉（约 60vw） */
+    .source-table-dict-zone {
+      border-radius: 0.5rem;
+      transition: box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+    .source-table-dict-zone:hover {
+      box-shadow: 0 0 0 2px rgba(0, 52, 111, 0.14);
+      background-color: rgba(241, 244, 246, 0.65);
+    }
+    .data-dictionary-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 199;
+      background: rgba(15, 23, 42, 0.22);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      pointer-events: none;
+    }
+    .data-dictionary-backdrop.is-open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .data-dictionary-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 60vw;
+      max-width: 60vw;
+      height: 100vh;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      background: #ffffff;
+      border-left: 1px solid #e2e8f0;
+      box-shadow: -16px 0 48px rgba(15, 23, 42, 0.12);
+      transform: translateX(100%);
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .data-dictionary-panel.is-open {
+      transform: translateX(0);
+    }
+    .data-dict-pane {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .data-dict-pane.hidden {
+      display: none;
     }
   </style>
 <style>
@@ -113,7 +166,11 @@
     .table-container {
       display: block;
       max-height: 800px;
-      overflow: visible !important;
+      overflow-x: auto;
+      overflow-y: auto;
+      scrollbar-gutter: stable;
+      box-sizing: border-box;
+      border-radius: 0.75rem;
     }
     .table-container::-webkit-scrollbar {
       width: 6px;
@@ -369,6 +426,64 @@
       box-shadow: 0 0 0 1px #004a99;
     }
   </style>
+<style>
+    /* Step 2 表头：隐藏列说明（黑底气泡；仅悬停表头格显示眼睛） */
+    .col-hide-eye-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      pointer-events: none;
+    }
+    th.group:hover .col-hide-eye-container {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .col-hide-eye-icon {
+      font-size: 18px;
+      line-height: 1;
+      cursor: default;
+    }
+    .col-hide-tooltip {
+      visibility: hidden;
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #0a0a0a;
+      color: rgba(245, 245, 245, 0.94);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      line-height: 1.5;
+      width: min(22rem, 92vw);
+      max-width: 22rem;
+      white-space: normal;
+      text-align: left;
+      z-index: 200;
+      opacity: 0;
+      transition: opacity 0.15s ease, visibility 0.15s ease;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      pointer-events: none;
+    }
+    .col-hide-tooltip::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-bottom-color: #0a0a0a;
+    }
+    .col-hide-eye-container:hover .col-hide-tooltip,
+    .col-hide-eye-container:focus-within .col-hide-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
 <!-- TopNavBar (Shared Component) -->
 <header class="bg-slate-50 dark:bg-slate-900 flex justify-between items-center px-6 py-3 w-full border-b border-slate-200/50 dark:border-slate-800/50 sticky top-0 z-50">
 <div class="flex items-center gap-8">
@@ -412,7 +527,7 @@
 </div>
 <div class="w-8 h-8 flex items-center justify-center rounded-lg text-primary cursor-pointer hover:bg-primary/10 transition-all group relative">
 <span class="material-symbols-outlined text-lg" style="font-variation-settings: &quot;FILL&quot; 1; font-weight: 700;">add</span>
-<div class="menu-tooltip" style="">New Table</div>
+<div class="menu-tooltip" style="">Add Table</div>
 </div>
 </div>
 <div class="w-8 h-px bg-slate-200 dark:bg-slate-800 mb-6"></div>
@@ -496,9 +611,10 @@
 <div class="flex items-center justify-center p-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg hover:bg-white dark:hover:bg-slate-900 cursor-pointer transition-all group">
 <div class="flex items-center gap-2 text-slate-400 group-hover:text-primary">
 <span class="material-symbols-outlined text-sm" style="">add_circle</span>
-<span class="text-xs font-semibold" style="">New Table</span>
+<span class="text-xs font-semibold" style="">Add Table</span>
 </div>
 </div>
+<p class="mt-1.5 px-1 text-[9px] leading-snug text-slate-400 dark:text-slate-500 text-center">你创建的最后一个表格就是最终整个Template生成的最终表格</p>
 </div>
 <div class="mt-auto pt-8">
 <div class="bg-primary/5 dark:bg-primary/10 rounded-lg p-4 border border-primary/10">
@@ -531,9 +647,10 @@
 <!-- Source Tables Row -->
 <div class="flex flex-row gap-6 w-full">
 <!-- Source Table 1 -->
-<div class="flex-1 flex flex-col gap-1.5 group relative">
+<div class="source-table-dict-zone flex-1 flex flex-col gap-1.5 min-w-0 rounded-lg p-1.5 -m-1.5" data-dict-target="t1">
+<div class="source-table-picker flex flex-col gap-1.5 group relative">
 <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant font-label" style="">Source Table</label>
-<div class="flex items-center justify-between gap-3 bg-surface-container-lowest rounded shadow-sm border border-outline-variant/10 px-4 py-2.5 cursor-pointer hover:border-primary/30 transition-all">
+<div class="source-table-trigger flex items-center justify-between gap-3 bg-surface-container-lowest rounded shadow-sm border border-outline-variant/10 px-4 py-2.5 cursor-pointer hover:border-primary/30 transition-all">
 <div class="flex items-center gap-2 overflow-hidden">
 <div class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></div>
 <span class="text-sm font-semibold text-on-surface truncate font-headline" style="">production_raw_transactions</span>
@@ -562,10 +679,12 @@
 </div>
 </div>
 </div>
+</div>
 <!-- Source Table 2 -->
-<div class="flex-1 flex flex-col gap-1.5 group relative">
+<div class="source-table-dict-zone flex-1 flex flex-col gap-1.5 min-w-0 rounded-lg p-1.5 -m-1.5" data-dict-target="t2">
+<div class="source-table-picker flex flex-col gap-1.5 group relative">
 <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant font-label" style="">Source Table 2</label>
-<div class="flex items-center justify-between gap-3 bg-surface-container-lowest rounded shadow-sm border border-outline-variant/10 px-4 py-2.5 cursor-pointer hover:border-primary/30 transition-all">
+<div class="source-table-trigger flex items-center justify-between gap-3 bg-surface-container-lowest rounded shadow-sm border border-outline-variant/10 px-4 py-2.5 cursor-pointer hover:border-primary/30 transition-all">
 <div class="flex items-center gap-2 overflow-hidden">
 <div class="w-2 h-2 rounded-full bg-secondary flex-shrink-0"></div>
 <span class="text-sm font-semibold text-on-surface truncate font-headline" style="">production_users</span>
@@ -589,6 +708,7 @@
 <span class="text-xs font-bold text-primary" style="">production.users</span>
 </div>
 <div class="px-4 py-2 hover:bg-slate-50 text-xs text-slate-600" style="">production.user_profiles</div>
+</div>
 </div>
 </div>
 </div>
@@ -763,9 +883,13 @@ AND billing_q4.deleted_at IS NULL</pre>
 </th>
 <th class="px-4 py-3 text-left border-r border-outline-variant/10 group min-w-[160px] relative hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
 <div class="flex items-center justify-between group/header">
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 min-w-0">
 <span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover/header:opacity-100 transition-opacity" style="">drag_indicator</span>
 <span class="font-bold font-headline" style="">transaction_id</span>
+<div class="col-hide-eye-container">
+<span class="material-symbols-outlined col-hide-eye-icon text-slate-400 hover:text-primary" aria-hidden="true">visibility</span>
+<div class="col-hide-tooltip" role="tooltip">隐藏此列，本Table输出列中将不会出现此列，在本列配置的Rename/Map Data也将失效，不影响其他列对Source Table中同名列的引用、计算</div>
+</div>
 </div>
 <div class="relative">
 <span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 opacity-0 group-hover/header:opacity-100 transition-opacity" style="">expand_more</span>
@@ -775,13 +899,17 @@ AND billing_q4.deleted_at IS NULL</pre>
 </th>
 <th class="px-4 py-3 text-left border-r border-outline-variant/10 relative min-w-[200px] group hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
 <div class="flex items-center justify-between">
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 min-w-0">
 <div class="relative flex items-center gap-2">
 <span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity" style="">drag_indicator</span>
 <div class="relative inline-block">
 <span class="font-bold font-headline" style="">customer_email</span>
 <span class="notification-dot" style="top: -4px; right: -8px;" aria-hidden="true"></span>
 </div>
+</div>
+<div class="col-hide-eye-container">
+<span class="material-symbols-outlined col-hide-eye-icon text-slate-400 hover:text-primary" aria-hidden="true">visibility</span>
+<div class="col-hide-tooltip" role="tooltip">隐藏此列，本Table输出列中将不会出现此列，在本列配置的Rename/Map Data也将失效，不影响其他列对Source Table中同名列的引用、计算</div>
 </div>
 </div>
 <span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 text-on-surface opacity-0 group-hover:opacity-100 transition-opacity" style="">expand_more</span>
@@ -799,13 +927,17 @@ AND billing_q4.deleted_at IS NULL</pre>
 </th>
 <th class="px-4 py-3 text-left border-r border-outline-variant/10 group min-w-[160px] relative hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
 <div class="flex items-center justify-between group/header">
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 min-w-0">
 <span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover/header:opacity-100 transition-opacity" style="">drag_indicator</span>
 <span class="font-bold font-headline" style="">
 <div class="relative inline-block">
 <span class="" style="">amount_usd</span>
 </div>
 </span>
+<div class="col-hide-eye-container">
+<span class="material-symbols-outlined col-hide-eye-icon text-slate-400 hover:text-primary" aria-hidden="true">visibility</span>
+<div class="col-hide-tooltip" role="tooltip">隐藏此列，本Table输出列中将不会出现此列，在本列配置的Rename/Map Data也将失效，不影响其他列对Source Table中同名列的引用、计算</div>
+</div>
 </div>
 <div class="relative">
 <span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 opacity-0 group-hover/header:opacity-100 transition-opacity" style="">expand_more</span>
@@ -822,9 +954,13 @@ AND billing_q4.deleted_at IS NULL</pre>
 </th>
 <th class="px-4 py-3 text-left border-r border-outline-variant/10 group min-w-[160px] relative hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
 <div class="flex items-center justify-between group/header">
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 min-w-0">
 <span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover/header:opacity-100 transition-opacity" style="">drag_indicator</span>
 <span class="font-bold font-headline" style="">currency</span>
+<div class="col-hide-eye-container">
+<span class="material-symbols-outlined col-hide-eye-icon text-slate-400 hover:text-primary" aria-hidden="true">visibility</span>
+<div class="col-hide-tooltip" role="tooltip">隐藏此列，本Table输出列中将不会出现此列，在本列配置的Rename/Map Data也将失效，不影响其他列对Source Table中同名列的引用、计算</div>
+</div>
 </div>
 <div class="relative">
 <span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 opacity-0 group-hover/header:opacity-100 transition-opacity" style="">expand_more</span>
@@ -841,9 +977,13 @@ AND billing_q4.deleted_at IS NULL</pre>
 </th>
 <th class="px-4 py-3 text-left border-r border-outline-variant/10 group min-w-[160px] relative hover:bg-[#f1f5f9] transition-colors cursor-pointer" style="">
 <div class="flex items-center justify-between group/header">
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 min-w-0">
 <span class="material-symbols-outlined text-sm text-slate-400 cursor-grab active:cursor-grabbing opacity-0 group-hover/header:opacity-100 transition-opacity" style="">drag_indicator</span>
 <span class="font-bold font-headline" style="">status</span>
+<div class="col-hide-eye-container">
+<span class="material-symbols-outlined col-hide-eye-icon text-slate-400 hover:text-primary" aria-hidden="true">visibility</span>
+<div class="col-hide-tooltip" role="tooltip">隐藏此列，本Table输出列中将不会出现此列，在本列配置的Rename/Map Data也将失效，不影响其他列对Source Table中同名列的引用、计算</div>
+</div>
 </div>
 <div class="relative">
 <span class="material-symbols-outlined cursor-pointer hover:bg-white rounded p-0.5 opacity-0 group-hover/header:opacity-100 transition-opacity" style="">expand_more</span>
@@ -932,4 +1072,150 @@ AND billing_q4.deleted_at IS NULL</pre>
     t.status = <span style="color:#ce9178">'SUCCESS'</span>
     <span style="color:#569cd6">AND</span> b.balance &gt; <span style="color:#b5cea8">0</span>
 <span style="color:#569cd6">ORDER BY</span>
-    t.amount_usd <span style="color:#569cd6">DESC</span>;</code></pre></div></div></div></div></main></div></body></html>
+    t.amount_usd <span style="color:#569cd6">DESC</span>;</code></pre></div></div></div></div></main></div>
+<div id="data-dictionary-backdrop" class="data-dictionary-backdrop" aria-hidden="true"></div>
+<aside id="data-dictionary-panel" class="data-dictionary-panel" role="complementary" aria-label="数据字典">
+<div class="flex items-start justify-between gap-4 px-5 py-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
+<div class="min-w-0">
+<p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 font-label">数据字典</p>
+<h2 id="data-dict-table-title" class="text-sm font-bold text-slate-900 font-headline truncate mt-0.5">—</h2>
+</div>
+<button type="button" id="data-dict-close" class="p-2 rounded-lg text-slate-500 hover:bg-slate-200 hover:text-slate-800 flex-shrink-0" aria-label="关闭">
+<span class="material-symbols-outlined text-xl">close</span>
+</button>
+</div>
+<div class="flex-1 min-h-0 flex flex-col overflow-hidden bg-white">
+<div id="data-dict-pane-t1" class="data-dict-pane hidden">
+<div class="flex-1 min-h-0 overflow-auto">
+<table class="w-full text-[11px] border-collapse">
+<thead class="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 text-left text-[10px] font-bold uppercase tracking-wider text-slate-500 shadow-sm">
+<tr>
+<th class="px-3 py-2.5 border-r border-slate-200 w-[28%]">列名</th>
+<th class="px-3 py-2.5 border-r border-slate-200 w-[22%]">类型</th>
+<th class="px-3 py-2.5 w-[50%]">说明</th>
+</tr>
+</thead>
+<tbody id="data-dict-body-t1" class="text-slate-700"></tbody>
+</table>
+</div>
+</div>
+<div id="data-dict-pane-t2" class="data-dict-pane hidden">
+<div class="flex-1 min-h-0 overflow-auto">
+<table class="w-full text-[11px] border-collapse">
+<thead class="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 text-left text-[10px] font-bold uppercase tracking-wider text-slate-500 shadow-sm">
+<tr>
+<th class="px-3 py-2.5 border-r border-slate-200 w-[28%]">列名</th>
+<th class="px-3 py-2.5 border-r border-slate-200 w-[22%]">类型</th>
+<th class="px-3 py-2.5 w-[50%]">说明</th>
+</tr>
+</thead>
+<tbody id="data-dict-body-t2" class="text-slate-700"></tbody>
+</table>
+</div>
+</div>
+</div>
+</aside>
+<script>
+(function () {
+  var TYPES = ['BIGINT', 'VARCHAR(64)', 'VARCHAR(255)', 'DECIMAL(18,2)', 'TIMESTAMP', 'BOOLEAN', 'JSON', 'UUID', 'TEXT', 'DOUBLE', 'INT', 'CHAR(36)', 'BYTEA'];
+  var T1_NAMES = ['transaction_id', 'customer_email', 'amount_usd', 'currency', 'status', 'created_at', 'updated_at', 'fee_amount', 'payment_method', 'merchant_id', 'order_ref', 'tax_region', 'metadata_json', 'ingest_batch_id', 'source_system', 'row_hash', 'is_test', 'version_no', 'partition_key', 'event_ts', 'settlement_id', 'fx_rate', 'amount_local', 'channel', 'device_id', 'session_id', 'geo_country', 'geo_city', 'risk_score', 'fraud_flag', 'extra_attr_31', 'extra_attr_32'];
+  var T2_NAMES = ['user_id', 'email', 'display_name', 'phone_e164', 'account_status', 'created_at', 'last_login_at', 'locale', 'timezone', 'marketing_opt_in', 'tenant_id', 'external_ref', 'avatar_url', 'password_updated_at', 'mfa_enabled', 'role_flags', 'billing_customer_id', 'segment_tags', 'consent_version', 'gdpr_deleted', 'notes', 'signup_channel', 'referrer_code', 'profile_json', 'address_line1', 'address_line2', 'city', 'postal_code', 'country_code', 'vip_tier', 'audit_seq', 'legacy_id'];
+
+  function esc(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function fillDictBody(tbody, names, tableHint) {
+    var rows = '';
+    for (var i = 0; i < names.length; i++) {
+      var nm = names[i];
+      var ty = TYPES[i % TYPES.length];
+      var desc = tableHint + ' · 字段 ' + (i + 1) + '，供合并键/条件引用。';
+      rows += '<tr class="border-b border-slate-100 hover:bg-slate-50/80"><td class="px-3 py-2 font-mono text-slate-900 border-r border-slate-100">' + esc(nm) + '</td><td class="px-3 py-2 font-mono text-slate-600 border-r border-slate-100">' + esc(ty) + '</td><td class="px-3 py-2 text-slate-600">' + esc(desc) + '</td></tr>';
+    }
+    tbody.innerHTML = rows;
+  }
+
+  var b1 = document.getElementById('data-dict-body-t1');
+  var b2 = document.getElementById('data-dict-body-t2');
+  if (b1) fillDictBody(b1, T1_NAMES, 'production_raw_transactions');
+  if (b2) fillDictBody(b2, T2_NAMES, 'production_users');
+
+  document.querySelectorAll('.source-table-picker').forEach(function (picker) {
+    var trigger = picker.querySelector('.source-table-trigger');
+    if (!trigger) return;
+    trigger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var wasOpen = picker.classList.contains('source-table-open');
+      document.querySelectorAll('.source-table-picker').forEach(function (el) {
+        el.classList.remove('source-table-open');
+      });
+      if (!wasOpen) picker.classList.add('source-table-open');
+    });
+  });
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('.source-table-picker')) return;
+    document.querySelectorAll('.source-table-picker.source-table-open').forEach(function (el) {
+      el.classList.remove('source-table-open');
+    });
+  });
+
+  var backdrop = document.getElementById('data-dictionary-backdrop');
+  var panel = document.getElementById('data-dictionary-panel');
+  var titleEl = document.getElementById('data-dict-table-title');
+  var pane1 = document.getElementById('data-dict-pane-t1');
+  var pane2 = document.getElementById('data-dict-pane-t2');
+  var closeBtn = document.getElementById('data-dict-close');
+  var hideTimer;
+
+  var titles = { t1: 'production_raw_transactions', t2: 'production_users' };
+
+  function openDict(which) {
+    if (!panel || !backdrop || !titleEl) return;
+    clearTimeout(hideTimer);
+    titleEl.textContent = titles[which] || '—';
+    panel.classList.add('is-open');
+    backdrop.classList.add('is-open');
+    backdrop.setAttribute('aria-hidden', 'false');
+    if (pane1 && pane2) {
+      pane1.classList.toggle('hidden', which !== 't1');
+      pane2.classList.toggle('hidden', which !== 't2');
+    }
+  }
+
+  function closeDict() {
+    if (!panel || !backdrop) return;
+    panel.classList.remove('is-open');
+    backdrop.classList.remove('is-open');
+    backdrop.setAttribute('aria-hidden', 'true');
+  }
+
+  document.querySelectorAll('.source-table-dict-zone').forEach(function (zone) {
+    zone.addEventListener('mouseenter', function () {
+      var t = zone.getAttribute('data-dict-target');
+      if (t) openDict(t);
+    });
+    zone.addEventListener('mouseleave', function () {
+      hideTimer = setTimeout(closeDict, 320);
+    });
+  });
+
+  if (panel) {
+    panel.addEventListener('mouseenter', function () {
+      clearTimeout(hideTimer);
+    });
+    panel.addEventListener('mouseleave', function () {
+      hideTimer = setTimeout(closeDict, 320);
+    });
+  }
+  if (closeBtn) closeBtn.addEventListener('click', closeDict);
+  if (backdrop) backdrop.addEventListener('click', closeDict);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeDict();
+  });
+})();
+</script>
+</body></html>
